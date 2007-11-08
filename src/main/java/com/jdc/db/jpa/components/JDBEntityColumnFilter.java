@@ -10,7 +10,7 @@
 package com.jdc.db.jpa.components;
 
 import com.jdc.components.*;
-import com.jdc.db.sql.query.QueryBuilder;
+import com.jdc.db.sql.query.SQLQueryBuilder;
 import com.jdc.db.sql.query.QueryCompareType;
 import com.jdc.db.jpa.components.FilterComponent.FilterType;
 import com.jdc.db.jpa.components.filters.JLookupComboBoxFilter;
@@ -29,7 +29,7 @@ public class JDBEntityColumnFilter {
     private String columnName;
     private FilterComponent filterComponent;
     private QueryCompareType compareType;
-    private int orGroupKey = QueryBuilder.NO_OR_GROUP;
+    private int orGroupKey = SQLQueryBuilder.NO_OR_GROUP;
 
     private static List<FilterComponent> stdComponents = new ArrayList<FilterComponent>();
     private static List<FilterComponent> customComponents = new ArrayList<FilterComponent>();
@@ -44,7 +44,7 @@ public class JDBEntityColumnFilter {
     
     /** Creates a new instance of JDBRecordColumnFilter */
     public JDBEntityColumnFilter(Component component, String columnName, QueryCompareType compareType) {
-        this(component, columnName, compareType, QueryBuilder.NO_OR_GROUP);
+        this(component, columnName, compareType, SQLQueryBuilder.NO_OR_GROUP);
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */

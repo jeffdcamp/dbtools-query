@@ -9,7 +9,6 @@
  */
 package com.jdc.db.sql.query;
 
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,7 +24,7 @@ import javax.persistence.Query;
  *
  * @author  jeff
  */
-public class QueryBuilder implements Cloneable {
+public class SQLQueryBuilder implements Cloneable {
 
     public static final int NO_OR_GROUP = -1;
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
@@ -45,11 +44,11 @@ public class QueryBuilder implements Cloneable {
     private String postSelectClause;
 
     /** Creates a new instance of QueryMaker */
-    public QueryBuilder() {
+    public SQLQueryBuilder() {
         reset();
     }
 
-    public QueryBuilder(EntityManager entityManager) {
+    public SQLQueryBuilder(EntityManager entityManager) {
         this.setEntityManager(entityManager);
         reset();
     }
@@ -66,9 +65,9 @@ public class QueryBuilder implements Cloneable {
     public Object clone() {
         Class thisClass = this.getClass();
         
-        QueryBuilder clone;
+        SQLQueryBuilder clone;
         try {
-            clone = (QueryBuilder) thisClass.newInstance();
+            clone = (SQLQueryBuilder) thisClass.newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Could not clone QueryBuilder", e);
         }
@@ -119,7 +118,7 @@ public class QueryBuilder implements Cloneable {
         postSelectClause = "";
     }
 
-    public Query executeQuery() throws SQLException {
+    public Query executeQuery() {
         if (entityManager != null) {
             return entityManager.createNativeQuery(this.toString());
         } else {
@@ -487,7 +486,7 @@ public class QueryBuilder implements Cloneable {
     }
 
     public static void main(String[] args) {
-        QueryBuilder qm = new QueryBuilder();
+        SQLQueryBuilder qm = new SQLQueryBuilder();
         qm.addTable("Cars");
         System.out.println("Query: " + qm.toString());
 

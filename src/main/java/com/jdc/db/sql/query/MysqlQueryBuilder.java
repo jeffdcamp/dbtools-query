@@ -14,7 +14,7 @@ package com.jdc.db.sql.query;
  *
  * @author Jeff
  */
-public class MysqlQueryBuilder extends QueryBuilder {
+public class MysqlQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatLikeClause(String column, String value) {

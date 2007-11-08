@@ -9,7 +9,7 @@
  */
 package com.jdc.db.jpa.components;
 
-import com.jdc.db.sql.query.QueryBuilder;
+import com.jdc.db.sql.query.SQLQueryBuilder;
 
 /**
  *
@@ -74,7 +74,7 @@ public class JDBEntityColumn {
         return hasJoin;
     }
     
-    public void addJoinToQuery(QueryBuilder qb) {
+    public void addJoinToQuery(SQLQueryBuilder qb) {
         if (qb == null) {
             throw new NullPointerException("qb cannot be null");
         }

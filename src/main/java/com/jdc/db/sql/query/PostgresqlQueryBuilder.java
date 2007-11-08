@@ -14,7 +14,7 @@ package com.jdc.db.sql.query;
  *
  * @author Jeff
  */
-public class PostgresqlQueryBuilder extends QueryBuilder {
+public class PostgresqlQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {

@@ -10,7 +10,7 @@
 
 package com.jdc.db.jpa;
 
-import com.jdc.db.sql.query.QueryBuilder;
+import com.jdc.db.sql.query.SQLQueryBuilder;
 
 /**
  *
@@ -28,5 +28,5 @@ public interface EditableEntityListFilter {
      * Allow the addition of additional filter
      * @param qb Existing query that contains at minumum the base querty
      */
-    public void appendFilter(QueryBuilder qb);
+    public void appendFilter(SQLQueryBuilder qb);
 }

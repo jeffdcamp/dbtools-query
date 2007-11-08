@@ -13,7 +13,7 @@ package com.jdc.db.sql.query;
  *
  * @author Jeff
  */
-public class FirebirdQueryBuilder extends QueryBuilder {
+public class FirebirdQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {

@@ -13,7 +13,7 @@ package com.jdc.db.sql.query;
  *
  * @author Jeff
  */
-public class DerbyQueryBuilder extends QueryBuilder {
+public class DerbyQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {

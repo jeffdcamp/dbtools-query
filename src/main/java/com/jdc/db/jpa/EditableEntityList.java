@@ -12,10 +12,9 @@
  * is a violation of applicable law. This material contains certain
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-
 package com.jdc.db.jpa;
 
-import com.jdc.db.sql.query.QueryBuilder;
+import com.jdc.db.sql.query.SQLQueryBuilder;
 import com.jdc.components.DefaultListItem;
 import com.jdc.components.JLookupComboBox;
 import com.jdc.db.jpa.components.EntityTableRowData;
@@ -48,7 +47,8 @@ import javax.swing.JOptionPane;
 public abstract class EditableEntityList<T extends Object> {
 
     private Class queryBuilderClass;
-    private QueryBuilder baseQuery; // this is the base query and should as little filters as possible
+    private SQLQueryBuilder baseQuery; // this is the base query and should as little filters as possible
+
     private int baseQueryIDColumn = -1;
     private List<DefaultListItem> itemList;
     private Map<Integer, List<DefaultListItem>> filteredItemLists = new HashMap<Integer, List<DefaultListItem>>();
@@ -64,14 +64,14 @@ public abstract class EditableEntityList<T extends Object> {
 
     /** Creates a new instance of EditableRecordList */
     public EditableEntityList(String tableName, String idColumnName) {
-        this(QueryBuilder.class, tableName, idColumnName);
+        this(SQLQueryBuilder.class, tableName, idColumnName);
     }
-    
+
     public EditableEntityList(Class queryBuilderClass, String tableName, String idColumnName) {
         if (queryBuilderClass == null) {
             throw new IllegalArgumentException("queryBuilderClass cannot be null");
         }
-        
+
         if (tableName == null || tableName.isEmpty()) {
             throw new IllegalArgumentException("tableName cannot be null or empty");
         }
@@ -86,32 +86,32 @@ public abstract class EditableEntityList<T extends Object> {
         // do some initialization
         createBaseQuery();
 
-        // add listeners to RecordManager
+    // add listeners to RecordManager
 //        EntityManager manager = getRecordManager(entityManager);
 //        manager.addRecordChangeListener(this);
     }
 
-    private QueryBuilder createQueryBuilder() {
+    private SQLQueryBuilder createQueryBuilder() {
         try {
-            return (QueryBuilder) queryBuilderClass.newInstance();
+            return (SQLQueryBuilder) queryBuilderClass.newInstance();
         } catch (InstantiationException ex) {
             Logger.getLogger(EditableEntityList.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             Logger.getLogger(EditableEntityList.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         throw new IllegalStateException("Could not create query builder");
     }
-    
+
     private void createBaseQuery() {
         baseQuery = createQueryBuilder();
 
         baseQuery.addTable(tableName);
         baseQueryIDColumn = baseQuery.addField(idColumnName);
         // base field columns
-        for (JDBEntityColumn column : getRecordColumns()) {
+        for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
             baseQuery.addField(column.getDbFieldName());
-            
+
             if (column.hasJoin()) {
                 column.addJoinToQuery(baseQuery);
             }
@@ -185,14 +185,15 @@ public abstract class EditableEntityList<T extends Object> {
     /**
      * Get list of columns to be used by table and search
      */
-    public abstract List<JDBEntityColumn> getRecordColumns();
+    public abstract List<JDBEntityColumn> getJDBEntityColumnsForTable();
+    
     /**
      * JTextField used by table to filter content.  If null is returned, then
      * no search field will be used.
      *
      * @return JTextField of text field that will be used in filtering search.  Set to null if none.
      */
-//    public abstract JTextField getQuickSearchTextField();
+    //    public abstract JTextField getQuickSearchTextField();
 
     /**
      * Check to see if this item really can be deleted.  (check for dependencies, etc)
@@ -335,7 +336,7 @@ public abstract class EditableEntityList<T extends Object> {
                     }
                     break;
                 default:
-            // ignore... move on...
+                // ignore... move on...
             }
         }
     }
@@ -485,7 +486,7 @@ public abstract class EditableEntityList<T extends Object> {
 
         // make sure parent is either a Dialog or Frame
         if (parent instanceof Dialog || parent instanceof Frame) {
-            // OK!
+        // OK!
         } else {
             throw new IllegalStateException("Cannot show item if parent component is NOT a Dialog or Frame");
         }
@@ -555,18 +556,18 @@ public abstract class EditableEntityList<T extends Object> {
         if (parent instanceof Window) {
             ((Window) parent).addWindowListener(new java.awt.event.WindowAdapter() {
 
-                @Override
+                        @Override
                 public void windowClosing(java.awt.event.WindowEvent evt) {
-                    Iterator<TableGroup> itr = tableGroups.iterator();
-                    while (itr.hasNext()) {
-                        TableGroup tableGroup = itr.next();
-                        if (tableGroup.getParent() == evt.getWindow()) {
-                            tableGroupsMap.remove(tableGroup.getTable());
-                            itr.remove();
+                            Iterator<TableGroup> itr = tableGroups.iterator();
+                            while (itr.hasNext()) {
+                                TableGroup tableGroup = itr.next();
+                                if (tableGroup.getParent() == evt.getWindow()) {
+                                    tableGroupsMap.remove(tableGroup.getTable());
+                                    itr.remove();
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -582,7 +583,7 @@ public abstract class EditableEntityList<T extends Object> {
             }
         }
 
-        // if not found... throw exception
+    // if not found... throw exception
 //        if (!found) {
 //            throw new IllegalStateException("Could NOT detach Table.  Table NOT found to detach");
 //        }
@@ -593,11 +594,11 @@ public abstract class EditableEntityList<T extends Object> {
         table.addMouseListener(new TableMouseAdapter(table));
         table.addKeyListener(new TableKeyAdapter(table));
 
-        // initialize table
+    // initialize table
         // table columns will be added on the first query
 //        initRecordColumns(table);
     }
-//    private void initRecordColumns(JPAEntityTable table) {
+    //    private void initRecordColumns(JPAEntityTable table) {
 //
 //        List<JDBRecordColumn> columns = getRecordColumns();
 //
@@ -654,17 +655,17 @@ public abstract class EditableEntityList<T extends Object> {
         if (parent instanceof Window) {
             ((Window) parent).addWindowListener(new java.awt.event.WindowAdapter() {
 
-                @Override
+                        @Override
                 public void windowClosing(java.awt.event.WindowEvent evt) {
-                    Iterator<JLookupComboBoxGroup> itr = comboBoxGroups.iterator();
-                    while (itr.hasNext()) {
-                        JLookupComboBoxGroup comboGroup = itr.next();
-                        if (comboGroup.getParent() == evt.getWindow()) {
-                            itr.remove();
+                            Iterator<JLookupComboBoxGroup> itr = comboBoxGroups.iterator();
+                            while (itr.hasNext()) {
+                                JLookupComboBoxGroup comboGroup = itr.next();
+                                if (comboGroup.getParent() == evt.getWindow()) {
+                                    itr.remove();
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -720,7 +721,7 @@ public abstract class EditableEntityList<T extends Object> {
 
                     break;
                 default:
-            // ignore... move on...
+                // ignore... move on...
             }
         }
     }
@@ -750,7 +751,7 @@ public abstract class EditableEntityList<T extends Object> {
 
                     if (newID <= 0) {
                         System.out.println("WARNING: Either the user cancelled adding new item OR developer code did NOT commit data (item.commit() then dbManager.commit())");
-                        // DO NOT THROW EXCEPTION!!!!  USER COULD HAVE CANCELLED THE ADD
+                    // DO NOT THROW EXCEPTION!!!!  USER COULD HAVE CANCELLED THE ADD
                         //    throw new IllegalStateException("New item that was created did NOT get saved because item.getID() was invalid [].  Make sure to do the following before closing edit item dialog: \n1. item.commit()\n2. dbManager.commit()");
                     }
 
@@ -777,7 +778,7 @@ public abstract class EditableEntityList<T extends Object> {
         }
 
         // make a copy of the base query so that it is not modified
-        QueryBuilder qb = (QueryBuilder) baseQuery.clone();
+        SQLQueryBuilder qb = (SQLQueryBuilder) baseQuery.clone();
 
         qb.setEntityManager(em);
 
@@ -787,7 +788,7 @@ public abstract class EditableEntityList<T extends Object> {
         // add ui columns to table if they have not already been added
         if (!tableGroup.isColumnsAlreadyAdded()) {
             int i = 1; // start at 1 because ID column has already been added
-            for (JDBEntityColumn column : getRecordColumns()) {
+            for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
                 //table.addColumn(i, column.getColumnName(), column.getColumnWidth(), column.isVisible());
                 table.setSqlColToUiColMap(i, column.getJTable2ColID());
                 table.setJDBEntityColumnBySQLColID(i, column);
@@ -795,7 +796,7 @@ public abstract class EditableEntityList<T extends Object> {
             }
 
             tableGroup.setColumnsAlreadyAdded(true);
-            // refresh table UI
+        // refresh table UI
         }
 
         // add any filters
@@ -828,41 +829,37 @@ public abstract class EditableEntityList<T extends Object> {
         // 1. Execute query
         // 2. Put results in TableRowData object
         List<EntityTableRowData> tableDataResults = new ArrayList<EntityTableRowData>();
-        try {
-            Query query = qb.executeQuery();
-            List<Object[]> rs = (List<Object[]>) query.getResultList();
-            for (Object[] resultRow : rs) {
-                EntityTableRowData dbTableRowData = new EntityTableRowData(baseQueryIDColumn);
+        Query query = qb.executeQuery();
+        List<Object[]> rs = (List<Object[]>) query.getResultList();
+        for (Object[] resultRow : rs) {
+            EntityTableRowData dbTableRowData = new EntityTableRowData(baseQueryIDColumn);
 
-                for (int col = 0; col < resultRow.length; col++) {
-                    //row[col] = r.getString(columns[col]);
-                    if (col == baseQueryIDColumn) {
-                        dbTableRowData.setTableDataID((Integer) resultRow[col]);
-                    } else {
-                        int colID = table.getUiColID(col);
-                        JDBEntityColumn entityCol = table.getJDBEntityColumnBySQLColID(col);
+            for (int col = 0; col < resultRow.length; col++) {
+                //row[col] = r.getString(columns[col]);
+                if (col == baseQueryIDColumn) {
+                    dbTableRowData.setTableDataID((Integer) resultRow[col]);
+                } else {
+                    int colID = table.getUiColID(col);
+                    JDBEntityColumn entityCol = table.getJDBEntityColumnBySQLColID(col);
 
-                        Class colClassType = entityCol.getClassType();
-                        if (colClassType == boolean.class || colClassType == Boolean.class) {
-                            Object data = resultRow[col];
-                            if (data instanceof Number) {
-                                Number n = (Number) data;
-                                if (n.intValue() == 0) {
-                                    dbTableRowData.setTableDataValueAt(colID, Boolean.FALSE);
-                                } else {
-                                    dbTableRowData.setTableDataValueAt(colID, Boolean.TRUE);
-                                }
+                    Class colClassType = entityCol.getClassType();
+                    if (colClassType == boolean.class || colClassType == Boolean.class) {
+                        Object data = resultRow[col];
+                        if (data instanceof Number) {
+                            Number n = (Number) data;
+                            if (n.intValue() == 0) {
+                                dbTableRowData.setTableDataValueAt(colID, Boolean.FALSE);
+                            } else {
+                                dbTableRowData.setTableDataValueAt(colID, Boolean.TRUE);
                             }
-                        } else {
-                            dbTableRowData.setTableDataValueAt(colID, resultRow[col]);
                         }
+                    } else {
+                        dbTableRowData.setTableDataValueAt(colID, resultRow[col]);
                     }
                 }
-
-                tableDataResults.add(dbTableRowData);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+
+            tableDataResults.add(dbTableRowData);
         }
 
         em.close();
@@ -916,7 +913,7 @@ public abstract class EditableEntityList<T extends Object> {
         // populate list
         if (refresh) {
             EntityManager em = getEntityManager();
-            QueryBuilder qb = createQueryBuilder();
+            SQLQueryBuilder qb = createQueryBuilder();
             qb.setEntityManager(em);
             qb.addTable(tableName);
             qb.addField(idColumnName);
@@ -1073,7 +1070,7 @@ public abstract class EditableEntityList<T extends Object> {
         private Component parent;
         private JLookupComboBox comboBox;
         private EditableEntityListFilter filter;
-//        public JLookupComboBoxGroup(JLookupComboBox comboBox, Component parent) {
+        //        public JLookupComboBoxGroup(JLookupComboBox comboBox, Component parent) {
 //            this(comboBox, parent, null);
 //        }
 
