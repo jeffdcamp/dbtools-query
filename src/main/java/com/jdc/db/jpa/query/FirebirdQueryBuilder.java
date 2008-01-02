@@ -1,13 +1,11 @@
 /*
  * FirebirdQueryBuilder.java
  *
- * Created on October 27, 2007
- *
- * Copyright 2007 Jeff Campbell. All rights reserved. Unauthorized reproduction 
+ * Copyright 2008 Jeff Campbell. All rights reserved. Unauthorized reproduction 
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.sql.query;
+package com.jdc.db.jpa.query;
 
 import com.jdc.db.shared.query.FirebirdUtil;
 
@@ -15,7 +13,7 @@ import com.jdc.db.shared.query.FirebirdUtil;
  *
  * @author Jeff
  */
-public class FirebirdQueryBuilder extends SQLQueryBuilder {
+public class FirebirdQueryBuilder extends JPAQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {

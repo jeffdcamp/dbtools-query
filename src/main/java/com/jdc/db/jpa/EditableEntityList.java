@@ -14,7 +14,7 @@
  */
 package com.jdc.db.jpa;
 
-import com.jdc.db.sql.query.SQLQueryBuilder;
+import com.jdc.db.jpa.query.JPAQueryBuilder;
 import com.jdc.components.DefaultListItem;
 import com.jdc.components.JLookupComboBox;
 import com.jdc.db.jpa.components.EntityTableRowData;
@@ -30,6 +30,7 @@ import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,41 +47,38 @@ import javax.swing.JOptionPane;
  */
 public abstract class EditableEntityList<T extends Object> {
 
-    private Class queryBuilderClass;
-    private SQLQueryBuilder baseQuery; // this is the base query and should as little filters as possible
+    private Class queryBuilderClass = JPAQueryBuilder.class;
+    private JPAQueryBuilder baseQuery; // this is the base query and should as little filters as possible
 
     private int baseQueryIDColumn = -1;
     private List<DefaultListItem> itemList;
     private Map<Integer, List<DefaultListItem>> filteredItemLists = new HashMap<Integer, List<DefaultListItem>>();
-    private Map<Integer, List<DefaultListItem>> filteredLists = new HashMap<Integer, List<DefaultListItem>>();
+    //private Map<Integer, List<DefaultListItem>> filteredLists = new HashMap<Integer, List<DefaultListItem>>();
     private List<TableGroup> tableGroups = new ArrayList<TableGroup>();
     private Map<JPAEntityTable, TableGroup> tableGroupsMap = new HashMap<JPAEntityTable, TableGroup>();
     private List<JLookupComboBoxGroup> comboBoxGroups = new ArrayList<JLookupComboBoxGroup>();
     private int editClickCount = 2;
     private EntityItemEditor<T> itemEditor;
     private EntityItemViewer<T> itemViewer;
-    private String tableName;
+    private String objectName; 
     private String idColumnName;
 
     /** Creates a new instance of EditableRecordList */
-    public EditableEntityList(String tableName, String idColumnName) {
-        this(SQLQueryBuilder.class, tableName, idColumnName);
+    public EditableEntityList(String objectName, String idColumnName) {
+        this(JPAQueryBuilder.class, objectName, idColumnName);
     }
-
-    public EditableEntityList(Class queryBuilderClass, String tableName, String idColumnName) {
-        if (queryBuilderClass == null) {
-            throw new IllegalArgumentException("queryBuilderClass cannot be null");
-        }
-
-        if (tableName == null || tableName.isEmpty()) {
-            throw new IllegalArgumentException("tableName cannot be null or empty");
+    
+    /** Creates a new instance of EditableRecordList */
+    public EditableEntityList(Class queryBuilderClass, String objectName, String idColumnName) {
+        if (objectName == null || objectName.isEmpty()) {
+            throw new IllegalArgumentException("objectName cannot be null or empty");
         }
         if (idColumnName == null || idColumnName.isEmpty()) {
             throw new IllegalArgumentException("idColumnName cannot be null or empty");
         }
 
         this.queryBuilderClass = queryBuilderClass;
-        this.tableName = tableName;
+        this.objectName = objectName;
         this.idColumnName = idColumnName;
 
         // do some initialization
@@ -91,9 +89,9 @@ public abstract class EditableEntityList<T extends Object> {
 //        manager.addRecordChangeListener(this);
     }
 
-    private SQLQueryBuilder createQueryBuilder() {
+    private JPAQueryBuilder createQueryBuilder() {
         try {
-            return (SQLQueryBuilder) queryBuilderClass.newInstance();
+            return (JPAQueryBuilder) queryBuilderClass.newInstance();
         } catch (InstantiationException ex) {
             Logger.getLogger(EditableEntityList.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
@@ -106,11 +104,11 @@ public abstract class EditableEntityList<T extends Object> {
     private void createBaseQuery() {
         baseQuery = createQueryBuilder();
 
-        baseQuery.addTable(tableName);
+        baseQuery.addObject(objectName);
         baseQueryIDColumn = baseQuery.addField(idColumnName);
         // base field columns
         for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
-            baseQuery.addField(column.getDbFieldName());
+            baseQuery.addField(column.getVarClassName());
 
             if (column.hasJoin()) {
                 column.addJoinToQuery(baseQuery);
@@ -507,7 +505,7 @@ public abstract class EditableEntityList<T extends Object> {
 
     public boolean editItem(Component parent, T item) {
         if (itemEditor == null) {
-            throw new IllegalStateException("EntityItemEditor has NOT been set for this list (Table: [" + tableName + "]).  Be sure to call setItemEditor(...) before using this list to edit items.");
+            throw new IllegalStateException("EntityItemEditor has NOT been set for this list (Table: [" + objectName + "]).  Be sure to call setItemEditor(...) before using this list to edit items.");
         }
 
         return itemEditor.editItem(parent, item);
@@ -515,7 +513,7 @@ public abstract class EditableEntityList<T extends Object> {
 
     public void viewItem(Component parent, T item) {
         if (itemViewer == null) {
-            throw new IllegalStateException("EntityItemViewer has NOT been set for this list (Table: [" + tableName + "]).  Be sure to call setItemViewer(...) before using this list to view items.");
+            throw new IllegalStateException("EntityItemViewer has NOT been set for this list (Table: [" + objectName + "]).  Be sure to call setItemViewer(...) before using this list to view items.");
         }
         itemViewer.viewItem(parent, item);
     }
@@ -778,7 +776,7 @@ public abstract class EditableEntityList<T extends Object> {
         }
 
         // make a copy of the base query so that it is not modified
-        SQLQueryBuilder qb = (SQLQueryBuilder) baseQuery.clone();
+        JPAQueryBuilder qb = (JPAQueryBuilder) baseQuery.clone();
 
         qb.setEntityManager(em);
 
@@ -811,17 +809,23 @@ public abstract class EditableEntityList<T extends Object> {
                 case INT:
                     if (!compFilter.ignoreComponentValue()) {
                         int intValue = (Integer) compFilter.getValue();
-                        qb.addFilter(compFilter.getColumn(), compFilter.getCompareType(), intValue, compFilter.getOrGroupKey());
+                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), intValue, compFilter.getOrGroupKey());
                     }
                     break;
                 case STRING:
                     if (!compFilter.ignoreComponentValue()) {
                         String value = (String) compFilter.getValue();
-                        qb.addFilter(compFilter.getColumn(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
+                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
+                    }
+                    break;
+                case DATE:
+                    if (!compFilter.ignoreComponentValue()) {
+                        Date value = (Date) compFilter.getValue();
+                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
                     }
                     break;
                 default:
-                    throw new IllegalStateException("filter for column [" + compFilter.getColumn() + "] could not be added because it had an unknown value type");
+                    throw new IllegalStateException("filter for column [" + compFilter.getClassVarName() + "] could not be added because it had an unknown value type");
             }
         }
 
@@ -913,9 +917,9 @@ public abstract class EditableEntityList<T extends Object> {
         // populate list
         if (refresh) {
             EntityManager em = getEntityManager();
-            SQLQueryBuilder qb = createQueryBuilder();
+            JPAQueryBuilder qb = createQueryBuilder();
             qb.setEntityManager(em);
-            qb.addTable(tableName);
+            qb.addObject(objectName);
             qb.addField(idColumnName);
 
             // add combo columns
@@ -1132,13 +1136,5 @@ public abstract class EditableEntityList<T extends Object> {
 
     public void setItemViewer(EntityItemViewer<T> itemViewer) {
         this.itemViewer = itemViewer;
-    }
-
-    public Class getQueryBuilderClass() {
-        return queryBuilderClass;
-    }
-
-    public void setQueryBuilderClass(Class queryBuilderClass) {
-        this.queryBuilderClass = queryBuilderClass;
     }
 }

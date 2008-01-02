@@ -10,6 +10,7 @@
 package com.jdc.db.jpa.components;
 
 import com.jdc.components.*;
+import com.jdc.db.jpa.components.filters.JCalendarPickerFilter;
 import com.jdc.db.sql.query.SQLQueryBuilder;
 import com.jdc.db.sql.query.QueryCompareType;
 import com.jdc.db.jpa.components.FilterComponent.FilterType;
@@ -25,8 +26,9 @@ import javax.swing.*;
  * @author Jeff
  */
 public class JDBEntityColumnFilter {
+    private FilterType filterType;
     private Component component;
-    private String columnName;
+    private String classVarName;
     private FilterComponent filterComponent;
     private QueryCompareType compareType;
     private int orGroupKey = SQLQueryBuilder.NO_OR_GROUP;
@@ -37,27 +39,34 @@ public class JDBEntityColumnFilter {
     static {
         // JDC
         stdComponents.add(new JLookupComboBoxFilter());
+        stdComponents.add(new JCalendarPickerFilter());
         
         // SWING
         stdComponents.add(new JTextFieldFilter());
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */
-    public JDBEntityColumnFilter(Component component, String columnName, QueryCompareType compareType) {
-        this(component, columnName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    public JDBEntityColumnFilter(Component component, String classVarName, QueryCompareType compareType) {
+        this(null, component, classVarName, compareType, SQLQueryBuilder.NO_OR_GROUP);
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */
-    public JDBEntityColumnFilter(Component component, String columnName, QueryCompareType compareType, int orGroupKey) {
+    public JDBEntityColumnFilter(FilterType forType, Component component, String classVarName, QueryCompareType compareType) {
+        this(forType, component, classVarName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    }
+    
+    /** Creates a new instance of JDBRecordColumnFilter */
+    public JDBEntityColumnFilter(FilterType forType, Component component, String classVarName, QueryCompareType compareType, int orGroupKey) {
+        this.filterType = forType;
         if (component == null) {
             throw new IllegalArgumentException("component cannot be null");
         }
         this.component = component;
 
-        if (columnName == null || columnName.length() == 0) {
+        if (classVarName == null || classVarName.length() == 0) {
             throw new IllegalArgumentException("columnName cannot be null or empty");
         }
-        this.columnName = columnName;
+        this.classVarName = classVarName;
         
         if (compareType == null) {
             compareType = QueryCompareType.LIKE;
@@ -68,7 +77,7 @@ public class JDBEntityColumnFilter {
         this.orGroupKey = orGroupKey;
         
         // determine what type the value is based on the component
-        findValueType();
+        findValueType(filterType);
     }
 
     public static void addFilterComponent(FilterComponent newFilter) {
@@ -79,9 +88,9 @@ public class JDBEntityColumnFilter {
         customComponents.add(newFilter);
     }
     
-    private void findValueType() {
+    private void findValueType(FilterType forType) {
         for (FilterComponent filterComp : customComponents) {
-            if (filterComp.isCompatableWith(component)) {
+            if (filterComp.isCompatableWith(component, forType)) {
                 filterComponent = filterComp;
                 break;
             }
@@ -90,7 +99,7 @@ public class JDBEntityColumnFilter {
         // if not found in custom... look in standard
         if (filterComponent == null) {
             for (FilterComponent filterComp : stdComponents) {
-                if (filterComp.isCompatableWith(component)) {
+                if (filterComp.isCompatableWith(component, forType)) {
                     filterComponent = filterComp;
                     break;
                 }
@@ -101,22 +110,38 @@ public class JDBEntityColumnFilter {
         if (filterComponent == null) {
             throw new IllegalStateException("could not find a compatable FilterComponent for given component");
         }
+        
+        if (forType == null) {
+            filterType = filterComponent.getDefaultFilterType();
+        }
     }
 
-    public String getColumn() {
-        return columnName;
+    public String getClassVarName() {
+        return classVarName;
     }
     
     public boolean ignoreComponentValue() {
-        return filterComponent.ignoreComponentValue(component);
+        FilterType typeToUse;
+        if (filterType == null) {
+            typeToUse = filterComponent.getDefaultFilterType();
+        } else {
+            typeToUse = filterType;
+        }
+        return filterComponent.ignoreComponentValue(component, typeToUse);
     }
     
     public Object getValue() {
-        return filterComponent.getValue(component);
+        FilterType typeToUse;
+        if (filterType == null) {
+            typeToUse = filterComponent.getDefaultFilterType();
+        } else {
+            typeToUse = filterType;
+        }
+        return filterComponent.getValue(component, typeToUse);
     }
     
     public FilterType getFilterType() {
-        return filterComponent.getFilterType();
+        return filterType;
     }
     
     public QueryCompareType getCompareType() {

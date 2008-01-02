@@ -19,19 +19,19 @@ import java.awt.Component;
  */
 public interface FilterComponent {
     public static enum FilterType {STRING, INT, DATE};
-    
-    public FilterType getFilterType();
+
+    public FilterType getDefaultFilterType();
     
     /**
      *
      */
-    public boolean isCompatableWith(Component comp);
+    public boolean isCompatableWith(Component comp, FilterType forType);
     
     /**
      * If this component is NOT set to something that the query should filter on
      * then return TRUE
      */
-    public boolean ignoreComponentValue(Component comp);
+    public boolean ignoreComponentValue(Component comp, FilterType forType);
     
     /**
      * Return the value of this component that WILL be used in the filter.  This
@@ -40,5 +40,5 @@ public interface FilterComponent {
      * return a Integer if FilterType.INT
      * return a Date if FilterType.DATE
      */
-    public Object getValue(Component comp);
+    public Object getValue(Component comp, FilterType forType);
 }

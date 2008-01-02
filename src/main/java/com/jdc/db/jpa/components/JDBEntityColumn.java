@@ -9,7 +9,7 @@
  */
 package com.jdc.db.jpa.components;
 
-import com.jdc.db.sql.query.SQLQueryBuilder;
+import com.jdc.db.jpa.query.JPAQueryBuilder;
 
 /**
  *
@@ -19,10 +19,10 @@ public class JDBEntityColumn {
 
     private int jtable2ColID = -1;
     private String columnName;
-    private String dbFieldName;
+    private String classVarName;
     
     private boolean hasJoin = false;
-    private String joinToTable;
+    private String joinToObject;
     private String joinFromField;
     private String joinToField;
     
@@ -33,29 +33,29 @@ public class JDBEntityColumn {
     private Class classType = null;
     
     /** Creates a new instance of JDBRecordColumn */
-    public JDBEntityColumn(int jtable2ColID, String dbFieldName) {
+    public JDBEntityColumn(int jtable2ColID, String classVarName) {
         this.jtable2ColID = jtable2ColID;
-        this.columnName = dbFieldName;
-        this.dbFieldName = dbFieldName;
+        this.columnName = classVarName;
+        this.classVarName = classVarName;
     }
 
-    public JDBEntityColumn(int jtable2ColID, String dbFieldName, int colWidth) {
+    public JDBEntityColumn(int jtable2ColID, String classVarName, int colWidth) {
         this.jtable2ColID = jtable2ColID;
-        this.columnName = dbFieldName;
-        this.dbFieldName = dbFieldName;
+        this.columnName = classVarName;
+        this.classVarName = classVarName;
         this.columnWidth = colWidth;
     }
     
-    public JDBEntityColumn(int jtable2ColID, String dbFieldName, String columnName) {
+    public JDBEntityColumn(int jtable2ColID, String classVarName, String columnName) {
         this.jtable2ColID = jtable2ColID;
         this.columnName = columnName;
-        this.dbFieldName = dbFieldName;
+        this.classVarName = classVarName;
     }
     
-    public JDBEntityColumn(int jtable2ColID, String dbFieldName, String columnName, int colWidth) {
+    public JDBEntityColumn(int jtable2ColID, String classVarName, String columnName, int colWidth) {
         this.jtable2ColID = jtable2ColID;
         this.columnName = columnName;
-        this.dbFieldName = dbFieldName;
+        this.classVarName = classVarName;
         this.columnWidth = colWidth;
     }
     
@@ -64,7 +64,7 @@ public class JDBEntityColumn {
             throw new IllegalArgumentException("all parameters must not be empty");
         }
         
-        this.joinToTable = joinToTable;
+        this.joinToObject = joinToTable;
         this.joinFromField = joinFromField;
         this.joinToField = joinToField;
         hasJoin = true;
@@ -74,12 +74,12 @@ public class JDBEntityColumn {
         return hasJoin;
     }
     
-    public void addJoinToQuery(SQLQueryBuilder qb) {
+    public void addJoinToQuery(JPAQueryBuilder qb) {
         if (qb == null) {
             throw new NullPointerException("qb cannot be null");
         }
         
-        qb.addTable(joinToTable);
+        qb.addObject(joinToObject);
         qb.addJoin(joinFromField, joinToField);
     }
 
@@ -100,12 +100,12 @@ public class JDBEntityColumn {
         this.columnName = columnName;
     }
 
-    public String getDbFieldName() {
-        return dbFieldName;
+    public String getVarClassName() {
+        return classVarName;
     }
 
-    public void setDbFieldName(String dbFieldName) {
-        this.dbFieldName = dbFieldName;
+    public void setClassVarName(String classVarName) {
+        this.classVarName = classVarName;
     }
 
     public int getColumnWidth() {

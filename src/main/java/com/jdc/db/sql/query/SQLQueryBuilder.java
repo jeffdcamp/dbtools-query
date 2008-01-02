@@ -9,6 +9,7 @@
  */
 package com.jdc.db.sql.query;
 
+import com.jdc.db.shared.query.QueryUtil;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -452,33 +453,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     public String formatLikeClause(String column, String value) {
-        boolean before = false;
-        if (value.indexOf('*') == 0) {
-            before = true;
-            value = value.substring(1);
-        }
-        boolean after = false;
-        if (value.lastIndexOf('*') == (value.length() - 1)) {
-            after = true;
-            value = value.substring(0, value.length() - 1);
-        }
-        StringBuffer select = new StringBuffer(column);
-        if (before == after) // default or two explicit stars
-        {
-            select.append(" LIKE '%");
-            select.append(formatString(value, false));
-            select.append("%'");
-        } else if (before) {
-            select.append(" LIKE '%");
-            select.append(formatString(value, false));
-            select.append("'");
-        } else // if endStar
-        {
-            select.append(" LIKE '");
-            select.append(formatString(value, false));
-            select.append("%'");
-        }
-        return select.toString();
+        return QueryUtil.formatLikeClause(column, value);
     }
 
     public String formatIgnoreCaseLikeClause(String column, String value) {
@@ -536,27 +511,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     public static String formatString(String str, boolean wrap) {
-        int length = str.length();
-        char[] input = str.toCharArray();
-        StringBuffer temp = new StringBuffer(length + 2);
-
-        if (wrap) {
-            temp.append('\'');
-        }  // opening quote
-
-        for (int i = 0; i < length; i++) {
-            if (input[i] == '\'') {
-                temp.append('\'');
-            }  // make the quote a literal
-
-            temp.append(input[i]);
-        }
-
-        if (wrap) {
-            temp.append('\'');
-        }  // closing quote
-
-        return temp.toString();
+        return QueryUtil.formatString(str, wrap);
     }
 
     public static String formatDate(java.util.Date date) {

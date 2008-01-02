@@ -9,12 +9,12 @@
  */
 package com.jdc.db.jpa.query;
 
+import com.jdc.db.shared.query.QueryUtil;
 import com.jdc.db.sql.query.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,10 +88,7 @@ public class JPAQueryBuilder implements Cloneable {
 
         // filters Map
         clone.filtersMap = new HashMap<Integer, List<FilterItem>>();
-        Iterator<Entry<Integer, List<FilterItem>>> itr = filtersMap.entrySet().iterator();
-        while (itr.hasNext()) {
-            Entry<Integer, List<FilterItem>> e = itr.next();
-
+        for (Entry<Integer, List<FilterItem>> e : filtersMap.entrySet()) {
             List<FilterItem> clonedFilters = new ArrayList<FilterItem>(e.getValue());
             clone.filtersMap.put(e.getKey(), clonedFilters);
         }
@@ -104,6 +101,9 @@ public class JPAQueryBuilder implements Cloneable {
         clone.selectClause = selectClause;
         clone.postSelectClause = postSelectClause;
 
+        clone.internalVarUsed = internalVarUsed;
+        clone.objectMap = new HashMap<String, String>(objectMap);
+        
         return clone;
     }
 
@@ -124,7 +124,16 @@ public class JPAQueryBuilder implements Cloneable {
 
     public Query executeQuery() {
         if (entityManager != null) {
-            return entityManager.createQuery(this.toString());
+            Query query = entityManager.createQuery(this.toString());
+            
+            // add on any parameters
+            for (FilterItem stdFilter : stdFilters) {
+                if (stdFilter.isParameterFilter()) {
+                    query.setParameter(stdFilter.getParamName(), stdFilter.getParamValue());
+                }
+            }
+            
+            return query;
         } else {
             System.out.println("WARNING... executeQuery called with a null entityManager.");
             return null;
@@ -145,8 +154,12 @@ public class JPAQueryBuilder implements Cloneable {
      * Adds a column to the query
      * @return columnID (or the order in which it was added... 0 based)
      */
-    public int addField(String fieldName) {
-        fields.add(new Field(fieldName));
+    public int addField(String varName) {
+        if (!internalVarUsed) {
+            throw new IllegalStateException("Cannot call addField(varName) when internal var is not being used");
+        }
+            
+        addField(INTERNAL_VAR, varName);
         return fields.size() - 1;
     }
 
@@ -154,23 +167,38 @@ public class JPAQueryBuilder implements Cloneable {
      * Adds a column to the query
      * @return columnID (or the order in which it was added... 0 based)
      */
-    public int addField(String fieldName, String alias) {
-        fields.add(new Field(fieldName, alias));
+    public int addField(String object, String varName) {
+        checkObjectForField(object);
+        fields.add(new Field(object + "." + varName));
         return fields.size() - 1;
     }
-
-    /**
-     * Adds a column to the query
-     * @return columnID (or the order in which it was added... 0 based)
-     */
-    public int addField(String tablename, String fieldName, String alias) {
-        fields.add(new Field(tablename + "." + fieldName, alias));
-        return fields.size() - 1;
+    
+    private void checkObjectForField(String objectName) {
+        if (!objectMap.containsKey(objectName)) {
+            throw new IllegalArgumentException("object named ["+ objectName +"] does not exist.  Be sure to call addObject(objectClassName) before adding fields for this object.");
+        }
     }
 
-    public void addObject(String objectName, String varName) {
-        varNames.add(varName);
-        objects.add(objectName +" "+ varName);
+    protected static final String INTERNAL_VAR = "intObj";
+    private boolean internalVarUsed = false;
+    private Map<String, String> objectMap = new HashMap<String, String>();
+    public void addObject(String objectClassName) {
+        if (objectMap.size() > 0) {
+            throw new IllegalStateException("Cannot call addObject(objectClassName) multiple times.  Use addObject(objectClassName, varNameForObject)");
+        }
+        
+        addObject(objectClassName, INTERNAL_VAR);
+    }
+    
+    public void addObject(String objectClassName, String varNameForObject) {
+        if (varNameForObject.equals(INTERNAL_VAR)) {
+            internalVarUsed = true;
+        }
+        
+        varNames.add(varNameForObject);
+        objects.add(objectClassName +" "+ varNameForObject);
+        
+        objectMap.put(varNameForObject, objectClassName);
     }
 
     public void addJoin(String field, String field2) {
@@ -272,58 +300,31 @@ public class JPAQueryBuilder implements Cloneable {
         filters.add(new FilterItem(varName +"."+ field, compare, Integer.toString(value)));
     }
 
-    public void addFilterTimeStamp(String field, Date value) {
-        addFilterTimeStamp(getOnlyVarName(), field, QueryCompareType.EQUAL, value);
+    public void addFilter(String field, Date value) {
+        addFilter(getOnlyVarName(), field, QueryCompareType.EQUAL, value);
     }
     
-    public void addFilterTimeStamp(String varName, String field, Date value) {
-        addFilterTimeStamp(varName, field, QueryCompareType.EQUAL, value);
+    public void addFilter(String varName, String field, Date value) {
+        addFilter(varName, field, QueryCompareType.EQUAL, value);
     }
 
-    public void addFilterTimeStamp(String field, QueryCompareType compare, Date value) {
-        addFilterTimeStamp(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
+    public void addFilter(String field, QueryCompareType compare, Date value) {
+        addFilter(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
     }
     
-    public void addFilterTimeStamp(String varName, String field, QueryCompareType compare, Date value) {
-        addFilterTimeStamp(varName, field, compare, value, NO_OR_GROUP);
+    public void addFilter(String varName, String field, QueryCompareType compare, Date value) {
+        addFilter(varName, field, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilterTimeStamp(String field, QueryCompareType compare, Date value, int orGroupKey) {
-        addFilterTimeStamp(getOnlyVarName(), field, compare, value, orGroupKey);
+    public void addFilter(String field, QueryCompareType compare, Date value, int orGroupKey) {
+        addFilter(getOnlyVarName(), field, compare, value, orGroupKey);
     }
     
-    public void addFilterTimeStamp(String varName, String field, QueryCompareType compare, Date value, int orGroupKey) {
+    public void addFilter(String varName, String field, QueryCompareType compare, Date value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(varName +"."+ field, compare, formatDateTime(value)));
-    }
-
-    public void addFilterDateOnly(String field, Date value) {
-        addFilterDateOnly(getOnlyVarName(), field, QueryCompareType.EQUAL, value);
-    }
-    
-    public void addFilterDateOnly(String varName, String field, Date value) {
-        addFilterDateOnly(varName, field, QueryCompareType.EQUAL, value);
-    }
-
-    public void addFilterDateOnly(String field, QueryCompareType compare, Date value) {
-        addFilterDateOnly(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
-    }
-    
-    public void addFilterDateOnly(String varName, String field, QueryCompareType compare, Date value) {
-        addFilterDateOnly(varName, field, compare, value, NO_OR_GROUP);
-    }
-
-    public void addFilterDateOnly(String field, QueryCompareType compare, Date value, int orGroupKey) {
-        addFilterDateOnly(getOnlyVarName(), field, compare, value, orGroupKey);
-    }
-    
-    public void addFilterDateOnly(String varName, String field, QueryCompareType compare, Date value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(varName +"."+ field, compare, formatDate(value)));
+        filters.add(new FilterItem(varName +"."+ field, compare, value));
     }
 
     public void addGroupBy(String item) {
@@ -342,7 +343,7 @@ public class JPAQueryBuilder implements Cloneable {
         selectClause = "";
         postSelectClause = "";
 
-        StringBuffer query = new StringBuffer("SELECT ");
+        StringBuilder query = new StringBuilder("SELECT ");
         containsItems = false;
 
         // fields
@@ -362,7 +363,7 @@ public class JPAQueryBuilder implements Cloneable {
         selectClause = query.toString();
 
         // table names
-        query = new StringBuffer();
+        query = new StringBuilder();
         query.append(" FROM ");
         containsItems = false;
         addListItems(query, objects);
@@ -381,10 +382,7 @@ public class JPAQueryBuilder implements Cloneable {
             addListItems(query, stdFilters, " AND ");
         }
 
-        Iterator<Entry<Integer, List<FilterItem>>> itr = filtersMap.entrySet().iterator();
-        while (itr.hasNext()) {
-            Entry<Integer, List<FilterItem>> e = itr.next();
-
+        for (Entry<Integer, List<FilterItem>> e :filtersMap.entrySet()) {
             query.append("(");
             addListItems(query, e.getValue(), " OR ");
             query.append(")");
@@ -418,12 +416,12 @@ public class JPAQueryBuilder implements Cloneable {
         return buildQuery();
     }
 
-    private void addListItems(StringBuffer query, List list) {
+    private void addListItems(StringBuilder query, List list) {
         addListItems(query, list, ", ");
     }
     private boolean containsItems = false;
 
-    private void addListItems(StringBuffer query, List list, String seperator) {
+    private void addListItems(StringBuilder query, List list, String seperator) {
         for (int i = 0; i < list.size(); i++) {
             if (containsItems) {
                 query.append(seperator);
@@ -463,18 +461,52 @@ public class JPAQueryBuilder implements Cloneable {
         }
     }
 
+    private enum FilterType{STRING, DATE};
+    private static int filterParamCount = 0;
     private class FilterItem {
-
+        private FilterType type = FilterType.STRING;
         private String field;
         private String value;
         private QueryCompareType compare;
+        
+        private Object paramValue;
+        private String paramName;
+        private boolean paramFilter = false;
 
         public FilterItem(String field, QueryCompareType compare, String value) {
+            type = FilterType.STRING;
             this.field = field;
             this.value = value;
             this.compare = compare;
         }
+        
+        public FilterItem(String field, QueryCompareType compare, Date value) {
+            type = FilterType.DATE;
+            this.field = field;
+            this.compare = compare;
+            
+            paramFilter = true;
+            paramName = "dateParam"+ (++filterParamCount);
+            this.value = ":"+ paramName;
+            this.paramValue = value;
+        }
 
+        public boolean isParameterFilter() {
+            return paramFilter;
+        }
+        
+        public FilterType getType() {
+            return type;
+        }
+
+        public String getParamName() {
+            return paramName;
+        }
+
+        public Object getParamValue() {
+            return paramValue;
+        }
+        
         @Override
         public String toString() {
             String filter = "";
@@ -503,9 +535,13 @@ public class JPAQueryBuilder implements Cloneable {
                     break;
             }
 
+            
             if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
                 filter = field + filterCompare + value;
             } else {
+                if (type != FilterType.STRING ) {
+                    throw new IllegalStateException("Cannot have a like clause on this filter type ["+ type +"] for field ["+ field +"]");
+                }
                 switch (compare) {
                     case LIKE:
                         filter = formatLikeClause(field, value);
@@ -524,33 +560,7 @@ public class JPAQueryBuilder implements Cloneable {
     }
 
     public String formatLikeClause(String column, String value) {
-        boolean before = false;
-        if (value.indexOf('*') == 0) {
-            before = true;
-            value = value.substring(1);
-        }
-        boolean after = false;
-        if (value.lastIndexOf('*') == (value.length() - 1)) {
-            after = true;
-            value = value.substring(0, value.length() - 1);
-        }
-        StringBuffer select = new StringBuffer(column);
-        if (before == after) // default or two explicit stars
-        {
-            select.append(" LIKE '%");
-            select.append(formatString(value, false));
-            select.append("%'");
-        } else if (before) {
-            select.append(" LIKE '%");
-            select.append(formatString(value, false));
-            select.append("'");
-        } else // if endStar
-        {
-            select.append(" LIKE '");
-            select.append(formatString(value, false));
-            select.append("%'");
-        }
-        return select.toString();
+        return QueryUtil.formatLikeClause(column, value);
     }
 
     public String formatIgnoreCaseLikeClause(String column, String value) {
@@ -590,27 +600,7 @@ public class JPAQueryBuilder implements Cloneable {
     }
 
     public static String formatString(String str, boolean wrap) {
-        int length = str.length();
-        char[] input = str.toCharArray();
-        StringBuffer temp = new StringBuffer(length + 2);
-
-        if (wrap) {
-            temp.append('\'');
-        }  // opening quote
-
-        for (int i = 0; i < length; i++) {
-            if (input[i] == '\'') {
-                temp.append('\'');
-            }  // make the quote a literal
-
-            temp.append(input[i]);
-        }
-
-        if (wrap) {
-            temp.append('\'');
-        }  // closing quote
-
-        return temp.toString();
+        return QueryUtil.formatString(str, wrap);
     }
 
     public static String formatDate(java.util.Date date) {

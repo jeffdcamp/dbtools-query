@@ -21,19 +21,23 @@ import javax.swing.*;
  */
 public class JTextFieldFilter implements FilterComponent {
     
-    public FilterComponent.FilterType getFilterType() {
+    public FilterType getDefaultFilterType() {
         return FilterType.STRING;
     }
-
-    public boolean isCompatableWith(Component comp) {
-        return comp instanceof JTextField;
+    
+    public boolean isCompatableWith(Component comp, FilterType forType) {
+        if (forType == null) {
+            forType = getDefaultFilterType();
+        }
+        
+        return comp instanceof JTextField && forType == FilterType.STRING;
     }
     
-    public boolean ignoreComponentValue(Component comp) {
-        return ((JTextField)comp).getText().trim().length() == 0;
+    public boolean ignoreComponentValue(Component comp, FilterType forType) {
+        return ((String)getValue(comp, forType)).length() == 0;
     }
 
-    public Object getValue(Component comp) {
+    public Object getValue(Component comp, FilterType forType) {
         return ((JTextField)comp).getText().trim();
     }
 }
