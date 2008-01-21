@@ -12,7 +12,7 @@ package com.jdc.db.jpa.components;
 import com.jdc.components.*;
 import com.jdc.db.jpa.components.filters.JCalendarPickerFilter;
 import com.jdc.db.sql.query.SQLQueryBuilder;
-import com.jdc.db.sql.query.QueryCompareType;
+import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.jpa.components.FilterComponent.FilterType;
 import com.jdc.db.jpa.components.filters.JLookupComboBoxFilter;
 import com.jdc.db.jpa.components.filters.JTextFieldFilter;

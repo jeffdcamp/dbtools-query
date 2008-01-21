@@ -9,6 +9,7 @@
  */
 package com.jdc.db.sql.query;
 
+import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryUtil;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -502,8 +503,8 @@ public class SQLQueryBuilder implements Cloneable {
         return entityManager;
     }
 
-    public void setEntityManager(EntityManager dbManager) {
-        this.entityManager = dbManager;
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     public static final String formatString(String str) {

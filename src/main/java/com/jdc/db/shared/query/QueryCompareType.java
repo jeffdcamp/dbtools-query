@@ -8,7 +8,7 @@
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
 
-package com.jdc.db.sql.query;
+package com.jdc.db.shared.query;
 
 public enum QueryCompareType {
     EQUAL, LESSTHAN, GREATERTHAN, LESSTHAN_EQUAL, GREATERTHAN_EQUAL, LIKE, LIKE_IGNORECASE

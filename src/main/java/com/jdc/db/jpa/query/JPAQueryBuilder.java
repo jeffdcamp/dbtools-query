@@ -9,6 +9,7 @@
  */
 package com.jdc.db.jpa.query;
 
+import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryUtil;
 import com.jdc.db.sql.query.*;
 import java.text.SimpleDateFormat;
