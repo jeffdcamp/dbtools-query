@@ -124,8 +124,25 @@ public class JPAQueryBuilder implements Cloneable {
     }
 
     public Query executeQuery() {
+        return executeQuery(false);
+    }
+    
+    public int executeCountQuery() {
+        int count = 0;
+        
+        Query query = executeQuery(true);
+        Object o = query.getSingleResult();
+        if (o != null) {
+            Object[] row = (Object[])o;
+            count = (Integer) row[0];
+        }
+        
+        return count;
+    }
+    
+    private Query executeQuery(boolean countOnly) {
         if (entityManager != null) {
-            Query query = entityManager.createQuery(this.toString());
+            Query query = entityManager.createQuery(this.toString(countOnly));
             
             // add on any parameters
             for (FilterItem stdFilter : stdFilters) {
@@ -341,6 +358,10 @@ public class JPAQueryBuilder implements Cloneable {
     }
 
     public String buildQuery() {
+        return buildQuery(false);
+    }
+    
+    public String buildQuery(boolean countOnly) {
         selectClause = "";
         postSelectClause = "";
 
@@ -348,15 +369,19 @@ public class JPAQueryBuilder implements Cloneable {
         containsItems = false;
 
         // fields
-        if (fields.size() > 0) {
-            addListItems(query, fields);
+        if (countOnly) {
+            query.append("count(*)");
         } else {
-            if (objects.size() == 1) {
-                List<Field> tempFields = new ArrayList<Field>();
-                tempFields.add(new Field(varNames.get(0)));
-                addListItems(query, tempFields);
+            if (fields.size() > 0) {
+                addListItems(query, fields);
             } else {
-                throw new IllegalStateException("There must be at least 1 field if there is more than 1 object");
+                if (objects.size() == 1) {
+                    List<Field> tempFields = new ArrayList<Field>();
+                    tempFields.add(new Field(varNames.get(0)));
+                    addListItems(query, tempFields);
+                } else {
+                    throw new IllegalStateException("There must be at least 1 field if there is more than 1 object");
+                }
             }
         }
 
@@ -417,6 +442,10 @@ public class JPAQueryBuilder implements Cloneable {
         return buildQuery();
     }
 
+    public String toString(boolean countOnly) {
+        return buildQuery(countOnly);
+    }
+    
     private void addListItems(StringBuilder query, List list) {
         addListItems(query, list, ", ");
     }
