@@ -5,7 +5,6 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-
 package com.jdc.db.shared.query;
 
 /**
@@ -16,11 +15,11 @@ public class QueryUtil {
 
     private QueryUtil() {
     }
-    
+
     public static final String formatString(String str) {
         return formatString(str, true);
     }
-    
+
     public static String formatString(String str, boolean wrap) {
         int length = str.length();
         char[] input = str.toCharArray();
@@ -44,7 +43,7 @@ public class QueryUtil {
 
         return temp.toString();
     }
- 
+
     public static String formatLikeClause(String column, String value) {
         boolean before = false;
         if (value.indexOf('*') == 0) {
@@ -78,5 +77,4 @@ public class QueryUtil {
     public static String formatIgnoreCaseLikeClause(String column, String value) {
         return formatLikeClause(column, value);
     }
-    
 }

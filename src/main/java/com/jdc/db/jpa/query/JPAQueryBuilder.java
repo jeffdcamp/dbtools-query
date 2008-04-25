@@ -663,4 +663,66 @@ public class JPAQueryBuilder implements Cloneable {
     public static String formatBoolean(Boolean value) {
         return value.booleanValue() ? "1" : "0";
     }
+
+    public int getCount(String objectClassName) {
+        return getCount(getEntityManager(), objectClassName);
+    }
+    
+    public static int getCount(EntityManager em, String objectClassName) {
+        if (em == null) {
+            throw new IllegalArgumentException("entityManager cannot be null");
+        }
+
+        int count = -1;
+
+        Query q = q = em.createQuery("SELECT count(*) FROM " + objectClassName);
+
+        Object[] results = (Object[]) q.getSingleResult();
+        count = ((Integer) results[0]).intValue();
+
+        return count;
+    }
+    
+    public int getCountFiltered(String objectClassName, String fieldName, String filterString, boolean ignoreCase) {
+        return getCountFiltered(getEntityManager(), objectClassName, fieldName, filterString, ignoreCase);
+    }
+    
+    public static int getCountFiltered(EntityManager em, String objectClassName, String fieldName, String filterString, boolean ignoreCase) {
+        if (em == null) {
+            throw new IllegalArgumentException("entityManager cannot be null");
+        }
+
+        int count = -1;
+
+        Query q = null;
+        if (ignoreCase) {
+            q = em.createQuery("SELECT count(*) FROM " + objectClassName + " o WHERE " + QueryUtil.formatLikeClause("o." + fieldName, filterString));
+        } else {
+            q = em.createQuery("SELECT count(*) FROM " + objectClassName + " o WHERE o." + fieldName + " = '" + filterString + "'");
+        }
+
+        Object[] results = (Object[]) q.getSingleResult();
+        count = ((Integer) results[0]).intValue();
+
+        return count;
+    }
+    
+    public int getCountFiltered(String objectClassName, String fieldName, int filterID) {
+        return getCountFiltered(getEntityManager(), objectClassName, fieldName, filterID);
+    }
+    
+    public static int getCountFiltered(EntityManager em, String objectClassName, String fieldName, int filterID) {
+        if (em == null) {
+            throw new IllegalArgumentException("entityManager cannot be null");
+        }
+
+        int count = -1;
+
+        Query q = em.createQuery("SELECT count(*) FROM " + objectClassName + " o WHERE o." + fieldName + " = " + filterID);
+
+        Object[] results = (Object[]) q.getSingleResult();
+        count = ((Integer) results[0]).intValue();
+
+        return count;
+    }
 }
