@@ -11,7 +11,6 @@ package com.jdc.db.jpa.query;
 
 import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryUtil;
-import com.jdc.db.sql.query.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +25,7 @@ import javax.persistence.Query;
  *
  * @author  jeff
  */
-public class JPAQueryBuilder implements Cloneable {
+public class JPAQueryBuilder<T extends Object> implements Cloneable {
 
     public static final int NO_OR_GROUP = -1;
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
@@ -725,4 +724,65 @@ public class JPAQueryBuilder implements Cloneable {
 
         return count;
     }
+    
+    public List<T> findRecordsByValue(String className, String column, int value) {
+        JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
+        qb.addObject(className);
+        qb.addFilter(column, value);
+        
+        Query q = qb.executeQuery();
+        
+        List<T> items = null;
+        if (q != null) {
+            items = q.getResultList();
+        }
+        
+        return items;
+    }
+    
+    public List<T> findRecordsByValue(String className, String column, String value) {
+        JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
+        qb.addObject(className);
+        qb.addFilter(column, value);
+        
+        Query q = qb.executeQuery();
+        
+        List<T> items = null;
+        if (q != null) {
+            items = q.getResultList();
+        }
+        
+        return items;
+    }
+    
+    public T findRecordByValue(String className, String column, int value) {
+        JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
+        qb.addObject(className);
+        qb.addFilter(column, value);
+        
+        Query q = qb.executeQuery();
+        
+        T item = null;
+        if (q != null) {
+            item = (T) q.getSingleResult();
+        }
+        
+        return item;
+    }
+    
+    public T findRecordByValue(String className, String column, String value) {
+        JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
+        qb.addObject(className);
+        qb.addFilter(column, value);
+        
+        Query q = qb.executeQuery();
+        
+        T item = null;
+        if (q != null) {
+            item = (T) q.getSingleResult();
+        }
+        
+        return item;
+    }
+    
 }
