@@ -16,7 +16,7 @@
     <distributionManagement>
         <repository>
             <id>soupbowl.releases</id>
-            <url>http://www.soupbowl.net:8081/nexus/content/repositories/releases</url>
+            <url>http://www.soupbowl.net:7070/nexus/content/repositories/releases</url>
         </repository>        
         <site>
             <id>soupbowl.site</id>
