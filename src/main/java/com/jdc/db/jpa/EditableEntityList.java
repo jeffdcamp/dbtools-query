@@ -17,6 +17,7 @@ package com.jdc.db.jpa;
 import com.jdc.db.jpa.query.JPAQueryBuilder;
 import com.jdc.components.DefaultListItem;
 import com.jdc.components.JLookupComboBox;
+import com.jdc.components.ListItem;
 import com.jdc.db.jpa.components.EntityTableRowData;
 import com.jdc.db.jpa.components.EntityItemEditor;
 import com.jdc.db.jpa.components.EntityItemViewer;
@@ -51,8 +52,8 @@ public abstract class EditableEntityList<T extends Object> {
     private JPAQueryBuilder baseQuery; // this is the base query and should as little filters as possible
 
     private int baseQueryIDColumn = -1;
-    private List<DefaultListItem> itemList;
-    private Map<Integer, List<DefaultListItem>> filteredItemLists = new HashMap<Integer, List<DefaultListItem>>();
+    private List<ListItem> itemList;
+    private Map<Integer, List<ListItem>> filteredItemLists = new HashMap<Integer, List<ListItem>>();
     //private Map<Integer, List<DefaultListItem>> filteredLists = new HashMap<Integer, List<DefaultListItem>>();
     private List<TableGroup> tableGroups = new ArrayList<TableGroup>();
     private Map<JPAEntityTable, TableGroup> tableGroupsMap = new HashMap<JPAEntityTable, TableGroup>();
@@ -110,9 +111,9 @@ public abstract class EditableEntityList<T extends Object> {
         for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
             baseQuery.addField(column.getVarClassName());
 
-            if (column.hasJoin()) {
-                column.addJoinToQuery(baseQuery);
-            }
+//            if (column.hasJoin()) {
+//                column.addJoinToQuery(baseQuery);
+//            }
         }
 
         // sort columns
@@ -227,7 +228,9 @@ public abstract class EditableEntityList<T extends Object> {
      * First item that should show in any attached JLookupComboBox's.  If null is
      * returned, then there is NO default item.
      */
-    public abstract DefaultListItem getDefaultComboItem();
+    public abstract ListItem getDefaultComboItem();
+
+    
     // ***************** END of Abstract methods *********************
 
     private TableGroup getTableGroup(JPAEntityTable dbTable) {
@@ -642,6 +645,7 @@ public abstract class EditableEntityList<T extends Object> {
         // fill the list
         try {
             itemLookupComboBox.setData(getList());
+            
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -787,8 +791,10 @@ public abstract class EditableEntityList<T extends Object> {
         if (!tableGroup.isColumnsAlreadyAdded()) {
             int i = 1; // start at 1 because ID column has already been added
             for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
-                //table.addColumn(i, column.getColumnName(), column.getColumnWidth(), column.isVisible());
-                table.setSqlColToUiColMap(i, column.getJTable2ColID());
+                int colId = column.getJTable2ColID();
+                
+                table.addColumn(colId, column.getColumnName(), column.getColumnWidth(), column.isVisible());
+                table.setSqlColToUiColMap(i, colId);
                 table.setJDBEntityColumnBySQLColID(i, column);
                 i++;
             }
@@ -872,21 +878,21 @@ public abstract class EditableEntityList<T extends Object> {
         return tableDataResults;
     }
 
-    public List<DefaultListItem> getList() throws SQLException {
+    public List<ListItem> getList() throws SQLException {
         return getList(false);
     }
 
-    public List<DefaultListItem> getList(boolean refresh) throws SQLException {
+    public List<ListItem> getList(boolean refresh) throws SQLException {
         return getList(refresh, null);
     }
 
-    private List<DefaultListItem> getList(boolean refresh, EditableEntityListFilter filter) throws SQLException {
+    private List<ListItem> getList(boolean refresh, EditableEntityListFilter filter) throws SQLException {
         int listID = -1;
         if (filter != null) {
             listID = filter.getFilterID();
         }
 
-        List<DefaultListItem> workingList;
+        List<ListItem> workingList;
 
         boolean initList = false;
         if (listID < 0) {
@@ -894,14 +900,14 @@ public abstract class EditableEntityList<T extends Object> {
 
             if (workingList == null) {
                 initList = true;
-                workingList = new ArrayList<DefaultListItem>();
+                workingList = new ArrayList<ListItem>();
             }
         } else {
             workingList = filteredItemLists.get(listID);
 
             if (workingList == null) {
                 initList = true;
-                workingList = new ArrayList<DefaultListItem>();
+                workingList = new ArrayList<ListItem>();
                 filteredItemLists.put(listID, workingList);
             }
         }
@@ -985,8 +991,8 @@ public abstract class EditableEntityList<T extends Object> {
         }
 
         try {
-            List<DefaultListItem> list = getList();
-            for (DefaultListItem item : list) {
+            List<ListItem> list = getList();
+            for (ListItem item : list) {
                 if (id == item.getListID()) {
                     // found it!
                     value = item.getListValue().toString();

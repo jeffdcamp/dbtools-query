@@ -132,8 +132,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         Query query = executeQuery(true);
         Object o = query.getSingleResult();
         if (o != null) {
-            Object[] row = (Object[])o;
-            count = (Integer) row[0];
+            count = ((Long) o).intValue();
         }
         
         return count;
@@ -407,9 +406,18 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             addListItems(query, stdFilters, " AND ");
         }
 
+        int orCount = 0;
         for (Entry<Integer, List<FilterItem>> e :filtersMap.entrySet()) {
-            query.append("(");
-            addListItems(query, e.getValue(), " OR ");
+            containsItems = false;
+            
+            if (orCount == 0) {
+                query.append(" (");
+            } else {
+                query.append(" OR (");
+            }
+            orCount++;
+            
+            addListItems(query, e.getValue(), " AND ");
             query.append(")");
         }
 
@@ -663,6 +671,20 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         return value.booleanValue() ? "1" : "0";
     }
 
+    /**
+     * Create count(*) query based on existing Builder tables and filters that have already been added to this query
+     * @param objectClassName
+     * @return
+     */
+    public int getCount() {
+        int count = -1;
+        
+        Query q = getEntityManager().createQuery(buildQuery(true));
+        count = ((Long) q.getSingleResult()).intValue();
+        
+        return count;
+    }
+    
     public int getCount(String objectClassName) {
         return getCount(getEntityManager(), objectClassName);
     }
@@ -674,10 +696,9 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
 
         int count = -1;
 
-        Query q = q = em.createQuery("SELECT count(*) FROM " + objectClassName);
+        Query q = em.createQuery("SELECT count(*) FROM " + objectClassName);
 
-        Object[] results = (Object[]) q.getSingleResult();
-        count = ((Integer) results[0]).intValue();
+        count = ((Long) q.getSingleResult()).intValue();
 
         return count;
     }
@@ -700,8 +721,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             q = em.createQuery("SELECT count(*) FROM " + objectClassName + " o WHERE o." + fieldName + " = '" + filterString + "'");
         }
 
-        Object[] results = (Object[]) q.getSingleResult();
-        count = ((Integer) results[0]).intValue();
+        count = ((Long) q.getSingleResult()).intValue();
 
         return count;
     }
@@ -719,8 +739,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
 
         Query q = em.createQuery("SELECT count(*) FROM " + objectClassName + " o WHERE o." + fieldName + " = " + filterID);
 
-        Object[] results = (Object[]) q.getSingleResult();
-        count = ((Integer) results[0]).intValue();
+        count = ((Long) q.getSingleResult()).intValue();
 
         return count;
     }

@@ -9,8 +9,6 @@
  */
 package com.jdc.db.jpa.components;
 
-import com.jdc.db.jpa.query.JPAQueryBuilder;
-
 /**
  *
  * @author Jeff
@@ -59,29 +57,29 @@ public class JDBEntityColumn {
         this.columnWidth = colWidth;
     }
     
-    public void addJoin(String joinToTable, String joinFromField, String joinToField) {
-        if (joinToTable.length() == 0 || joinFromField.length() == 0 || joinToField.length() == 0) {
-            throw new IllegalArgumentException("all parameters must not be empty");
-        }
-        
-        this.joinToObject = joinToTable;
-        this.joinFromField = joinFromField;
-        this.joinToField = joinToField;
-        hasJoin = true;
-    }
-    
-    public boolean hasJoin() {
-        return hasJoin;
-    }
-    
-    public void addJoinToQuery(JPAQueryBuilder qb) {
-        if (qb == null) {
-            throw new NullPointerException("qb cannot be null");
-        }
-        
-        qb.addObject(joinToObject);
-        qb.addJoin(joinFromField, joinToField);
-    }
+//    public void addJoin(String joinToTable, String joinFromField, String joinToField) {
+//        if (joinToTable.length() == 0 || joinFromField.length() == 0 || joinToField.length() == 0) {
+//            throw new IllegalArgumentException("all parameters must not be empty");
+//        }
+//        
+//        this.joinToObject = joinToTable;
+//        this.joinFromField = joinFromField;
+//        this.joinToField = joinToField;
+//        hasJoin = true;
+//    }
+//    
+//    public boolean hasJoin() {
+//        return hasJoin;
+//    }
+//    
+//    public void addJoinToQuery(JPAQueryBuilder qb) {
+//        if (qb == null) {
+//            throw new NullPointerException("qb cannot be null");
+//        }
+//        
+//        qb.addObject(joinToObject);
+//        qb.addJoin(joinFromField, joinToField);
+//    }
 
     public int getJTable2ColID() {
         return jtable2ColID;
