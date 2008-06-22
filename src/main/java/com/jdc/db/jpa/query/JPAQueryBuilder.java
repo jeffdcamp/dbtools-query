@@ -175,7 +175,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             throw new IllegalStateException("Cannot call addField(varName) when internal var is not being used");
         }
             
-        addField(INTERNAL_VAR, varName);
+        addField(DEFAULT_VAR, varName);
         return fields.size() - 1;
     }
 
@@ -195,7 +195,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         }
     }
 
-    protected static final String INTERNAL_VAR = "intObj";
+    public static final String DEFAULT_VAR = "dfltObj";
     private boolean internalVarUsed = false;
     private Map<String, String> objectMap = new HashMap<String, String>();
     public void addObject(String objectClassName) {
@@ -203,11 +203,11 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             throw new IllegalStateException("Cannot call addObject(objectClassName) multiple times.  Use addObject(objectClassName, varNameForObject)");
         }
         
-        addObject(objectClassName, INTERNAL_VAR);
+        addObject(objectClassName, DEFAULT_VAR);
     }
     
     public void addObject(String objectClassName, String varNameForObject) {
-        if (varNameForObject.equals(INTERNAL_VAR)) {
+        if (varNameForObject.equals(DEFAULT_VAR)) {
             internalVarUsed = true;
         }
         
@@ -247,108 +247,116 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         }
     }
     
-    public void addFilter(String field, String value) {
-        addFilter(getOnlyVarName(), field, QueryCompareType.EQUAL, value);
+    public void addFilter(String varName, String value) {
+        addFilter(getOnlyVarName(), varName, QueryCompareType.EQUAL, value);
     }
     
-    public void addFilter(String varName, String field, String value) {
-        addFilter(varName, field, QueryCompareType.EQUAL, value);
+    public void addFilter(String objectVarName, String varName, String value) {
+        addFilter(objectVarName, varName, QueryCompareType.EQUAL, value);
     }
 
-    public void addFilter(String field, QueryCompareType compare, String value) {
-        addFilter(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
+    public void addFilter(String varName, QueryCompareType compare, String value) {
+        addFilter(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, String value) {
-        addFilter(varName, field, compare, value, NO_OR_GROUP);
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, String value) {
+        addFilter(objectVarName, varName, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String field, QueryCompareType compare, String value, int orGroupKey) {
-        addFilter(getOnlyVarName(), field, compare, value, orGroupKey);
+    public void addFilter(String varName, QueryCompareType compare, String value, int orGroupKey) {
+        addFilter(getOnlyVarName(), varName, compare, value, orGroupKey);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, String value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, String value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
         if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
-            filters.add(new FilterItem(varName +"."+ field, compare, formatString(value)));
+            filters.add(new FilterItem(objectVarName +"."+ varName, compare, formatString(value)));
         } else {
-            filters.add(new FilterItem(varName +"."+ field, compare, value));
+            filters.add(new FilterItem(objectVarName +"."+ varName, compare, value));
         }
     }
 
-    public void addFilter(String field, int value) {
-        addFilter(getOnlyVarName(), field, value, NO_OR_GROUP);
+    public void addFilter(String varName, int value) {
+        addFilter(getOnlyVarName(), varName, value, NO_OR_GROUP);
     }
     
-    public void addFilter(String varName, String field, int value) {
-        addFilter(varName, field, value, NO_OR_GROUP);
+    public void addFilter(String objectVarName, String varName, int value) {
+        addFilter(objectVarName, varName, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String field, int value, int orGroupKey) {
-        addFilter(getOnlyVarName(), field, value, orGroupKey);
+    public void addFilter(String varName, int value, int orGroupKey) {
+        addFilter(getOnlyVarName(), varName, value, orGroupKey);
     }
     
-    public void addFilter(String varName, String field, int value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, int value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(varName +"."+ field, QueryCompareType.EQUAL, Integer.toString(value)));
+        filters.add(new FilterItem(objectVarName +"."+ varName, QueryCompareType.EQUAL, Integer.toString(value)));
     }
 
-    public void addFilter(String field, QueryCompareType compare, int value) {
-        addFilter(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
+    public void addFilter(String varName, QueryCompareType compare, int value) {
+        addFilter(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, int value) {
-        addFilter(varName, field, compare, value, NO_OR_GROUP);
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, int value) {
+        addFilter(objectVarName, varName, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String field, QueryCompareType compare, int value, int orGroupKey) {
-        addFilter(getOnlyVarName(), field, compare, value, orGroupKey);
+    public void addFilter(String varName, QueryCompareType compare, int value, int orGroupKey) {
+        addFilter(getOnlyVarName(), varName, compare, value, orGroupKey);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, int value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, int value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(varName +"."+ field, compare, Integer.toString(value)));
+        filters.add(new FilterItem(objectVarName +"."+ varName, compare, Integer.toString(value)));
     }
 
-    public void addFilter(String field, Date value) {
-        addFilter(getOnlyVarName(), field, QueryCompareType.EQUAL, value);
+    public void addFilter(String varName, Date value) {
+        addFilter(getOnlyVarName(), varName, QueryCompareType.EQUAL, value);
     }
     
-    public void addFilter(String varName, String field, Date value) {
-        addFilter(varName, field, QueryCompareType.EQUAL, value);
+    public void addFilter(String objectVarName, String varName, Date value) {
+        addFilter(objectVarName, varName, QueryCompareType.EQUAL, value);
     }
 
-    public void addFilter(String field, QueryCompareType compare, Date value) {
-        addFilter(getOnlyVarName(), field, compare, value, NO_OR_GROUP);
+    public void addFilter(String varName, QueryCompareType compare, Date value) {
+        addFilter(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, Date value) {
-        addFilter(varName, field, compare, value, NO_OR_GROUP);
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, Date value) {
+        addFilter(objectVarName, varName, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String field, QueryCompareType compare, Date value, int orGroupKey) {
-        addFilter(getOnlyVarName(), field, compare, value, orGroupKey);
+    public void addFilter(String varName, QueryCompareType compare, Date value, int orGroupKey) {
+        addFilter(getOnlyVarName(), varName, compare, value, orGroupKey);
     }
     
-    public void addFilter(String varName, String field, QueryCompareType compare, Date value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, Date value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(varName +"."+ field, compare, value));
+        filters.add(new FilterItem(objectVarName +"."+ varName, compare, value));
     }
 
-    public void addGroupBy(String item) {
-        groupBys.add(item);
+    public void addGroupBy(String varName) {
+        groupBys.add(DEFAULT_VAR +"."+ varName);
+    }
+    
+    public void addGroupBy(String objectVarName, String varName) {
+        groupBys.add(objectVarName +"."+ varName);
     }
 
-    public void addOrderBy(String item) {
-        orderBys.add(item);
+    public void addOrderBy(String varName) {
+        orderBys.add(DEFAULT_VAR +"."+ varName);
+    }
+    
+    public void addOrderBy(String objectVarName, String varName) {
+        orderBys.add(objectVarName +"."+ varName);
     }
 
     public void addAndCalause(String c) {

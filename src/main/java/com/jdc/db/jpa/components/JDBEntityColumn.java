@@ -9,6 +9,8 @@
  */
 package com.jdc.db.jpa.components;
 
+import com.jdc.db.jpa.query.JPAQueryBuilder;
+
 /**
  *
  * @author Jeff
@@ -19,8 +21,10 @@ public class JDBEntityColumn {
     private String columnName;
     private String classVarName;
     
-    private boolean hasJoin = false;
-    private String joinToObject;
+    private boolean isJoin = false;
+    private String joinObjectClassName;
+    private String joinObjectName;
+    private String joinObjectVarName;
     private String joinFromField;
     private String joinToField;
     
@@ -57,7 +61,42 @@ public class JDBEntityColumn {
         this.columnWidth = colWidth;
     }
     
-//    public void addJoin(String joinToTable, String joinFromField, String joinToField) {
+    /**
+     * Allows a var/column from a different table to to show in the results
+     * 
+     * Example: SELECT dflt.name, addr.name FROM Person dflt, Address addr
+     *                WHERE dflt.id = addr.person_id
+     * 
+     * Example new JDBEntityColumn(10, "Address", "addr", "name", "person_id", "id", "Address Name", 100);
+     * 
+     * @param jtable2ColID
+     * @param joinObjectClassName, Name of join table Object ("Address")
+     * @param joinObjectName, Name of join table Object (using "addr" will produce "Address addr" in final query)
+     * @param joinObjectVarName, DATA TO BE SHOWN IN FINAL QUERY.  Name of var from join table (using "name" will produce "addr.name" in final query)
+     * @param joinObjectJoinVarName, Name of var to join to in other table/object (using "persion_id" will produce "addr.person_id")
+     * @param joinColumnName, Name of var in dflt table to join with other table (using "id" will produce "dflt.id" in final query)
+     * @param columnName, Name of JTable column name
+     * @param colWidth, Width of JTable column width
+     */
+    public JDBEntityColumn(int jtable2ColID, String joinObjectClassName, String joinObjectName, String joinObjectVarName, String joinObjectJoinVarName, String joinColumnName, String columnName, int colWidth) {
+        this.jtable2ColID = jtable2ColID;
+        this.columnName = columnName;
+        this.columnWidth = colWidth;
+        
+        isJoin = true;
+        if (joinObjectClassName.length() == 0 || joinObjectName.length() == 0 || joinObjectVarName.length() == 0 || joinObjectJoinVarName.length() == 0 || joinColumnName.length() == 0) {
+            throw new IllegalArgumentException("all parameters must not be empty");
+        }
+        this.classVarName = joinObjectVarName;
+        this.joinObjectVarName = joinObjectVarName;
+        this.joinObjectClassName = joinObjectClassName;
+        this.joinObjectName = joinObjectName;
+        this.joinFromField = joinObjectName +"."+ joinObjectJoinVarName;
+        this.joinToField = JPAQueryBuilder.DEFAULT_VAR +"."+ joinColumnName;
+    }
+    
+    
+//    private void addJoin(String joinToTable, String joinFromField, String joinToField) {
 //        if (joinToTable.length() == 0 || joinFromField.length() == 0 || joinToField.length() == 0) {
 //            throw new IllegalArgumentException("all parameters must not be empty");
 //        }
@@ -67,19 +106,20 @@ public class JDBEntityColumn {
 //        this.joinToField = joinToField;
 //        hasJoin = true;
 //    }
-//    
-//    public boolean hasJoin() {
-//        return hasJoin;
-//    }
-//    
-//    public void addJoinToQuery(JPAQueryBuilder qb) {
-//        if (qb == null) {
-//            throw new NullPointerException("qb cannot be null");
-//        }
-//        
-//        qb.addObject(joinToObject);
-//        qb.addJoin(joinFromField, joinToField);
-//    }
+    
+    public boolean isJoin() {
+        return isJoin;
+    }
+    
+    public void addJoinToQuery(JPAQueryBuilder qb) {
+        if (qb == null) {
+            throw new NullPointerException("qb cannot be null");
+        }
+        
+        qb.addObject(joinObjectClassName, joinObjectName);
+        qb.addField(joinObjectName, joinObjectVarName);
+        qb.addJoin(joinFromField, joinToField);
+    }
 
     public int getJTable2ColID() {
         return jtable2ColID;
@@ -141,4 +181,26 @@ public class JDBEntityColumn {
     public void setClassType(Class classType) {
         this.classType = classType;
     }
+
+    public String getJoinFromField() {
+        return joinFromField;
+    }
+
+    public String getJoinObjectClassName() {
+        return joinObjectClassName;
+    }
+
+    public String getJoinObjectName() {
+        return joinObjectName;
+    }
+
+    public String getJoinObjectVarName() {
+        return joinObjectVarName;
+    }
+
+    public String getJoinToField() {
+        return joinToField;
+    }
+    
+    
 }

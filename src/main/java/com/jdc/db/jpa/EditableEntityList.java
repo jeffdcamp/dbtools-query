@@ -109,18 +109,33 @@ public abstract class EditableEntityList<T extends Object> {
         baseQueryIDColumn = baseQuery.addField(idColumnName);
         // base field columns
         for (JDBEntityColumn column : getJDBEntityColumnsForTable()) {
-            baseQuery.addField(column.getVarClassName());
-
-//            if (column.hasJoin()) {
-//                column.addJoinToQuery(baseQuery);
-//            }
+            if (!column.isJoin()) {
+                baseQuery.addField(column.getVarClassName());
+            } else {
+                baseQuery.addObject(column.getJoinObjectClassName(), column.getJoinObjectName());
+                baseQuery.addField(column.getJoinObjectName(), column.getJoinObjectVarName());
+                baseQuery.addJoin(column.getJoinFromField(), column.getJoinToField());
+            }
         }
 
         // sort columns
         String[] orderByColumns = getOrderByColumns();
         if (orderByColumns != null) {
             for (int i = 0; i < orderByColumns.length; i++) {
-                baseQuery.addOrderBy(orderByColumns[i]);
+                String orderColumn = orderByColumns[i];
+                if (orderColumn.indexOf('.') < 0) {
+                    baseQuery.addOrderBy(orderByColumns[i]);
+                } else {
+                    String[] split = orderColumn.split(".");
+                    
+                    if (split.length != 2) {
+                        throw new IllegalStateException("Cannot add orderBy for column ["+ orderColumn +"], there can only be 0 or 1 '.' in the orderBy param ");
+                    }
+                    
+                    String objectVarName = split[0];
+                    String varName = split[1];
+                    baseQuery.addOrderBy(objectVarName, varName);
+                }
             }
         }
     }
@@ -839,6 +854,10 @@ public abstract class EditableEntityList<T extends Object> {
         // 1. Execute query
         // 2. Put results in TableRowData object
         List<EntityTableRowData> tableDataResults = new ArrayList<EntityTableRowData>();
+        
+        // Debug
+        //System.out.println("Query: ["+ qb.toString() +"]");
+        
         Query query = qb.executeQuery();
         List<Object[]> rs = (List<Object[]>) query.getResultList();
         for (Object[] resultRow : rs) {
