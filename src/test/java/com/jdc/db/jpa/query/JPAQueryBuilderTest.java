@@ -62,7 +62,7 @@ public class JPAQueryBuilderTest {
      */
     @Test
     public void testBasicQuery() {
-        String defaultVar = JPAQueryBuilder.DEFAULT_VAR;
+        String defaultVar = JPAQueryBuilder.DEFAULT_OBJ_VAR;
 
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();
@@ -82,7 +82,7 @@ public class JPAQueryBuilderTest {
     
     @Test
     public void testBasicFieldQuery() {
-        String defaultVar = JPAQueryBuilder.DEFAULT_VAR;
+        String defaultVar = JPAQueryBuilder.DEFAULT_OBJ_VAR;
 
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();

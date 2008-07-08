@@ -175,7 +175,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             throw new IllegalStateException("Cannot call addField(varName) when internal var is not being used");
         }
             
-        addField(DEFAULT_VAR, varName);
+        addField(DEFAULT_OBJ_VAR, varName);
         return fields.size() - 1;
     }
 
@@ -195,7 +195,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         }
     }
 
-    public static final String DEFAULT_VAR = "dfltObj";
+    public static final String DEFAULT_OBJ_VAR = "dfltObj";
     private boolean internalVarUsed = false;
     private Map<String, String> objectMap = new HashMap<String, String>();
     public void addObject(String objectClassName) {
@@ -203,11 +203,11 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             throw new IllegalStateException("Cannot call addObject(objectClassName) multiple times.  Use addObject(objectClassName, varNameForObject)");
         }
         
-        addObject(objectClassName, DEFAULT_VAR);
+        addObject(objectClassName, DEFAULT_OBJ_VAR);
     }
     
     public void addObject(String objectClassName, String varNameForObject) {
-        if (varNameForObject.equals(DEFAULT_VAR)) {
+        if (varNameForObject.equals(DEFAULT_OBJ_VAR)) {
             internalVarUsed = true;
         }
         
@@ -241,7 +241,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         if (varNames.size() == 1) {
             return varNames.get(0);
         } else if (varNames.size() > 1) {
-            throw new IllegalStateException("There are more than one object!");
+            throw new IllegalStateException("Cannot determine which objectVarName to use. (There are more than one object in this query).  Check your filters to be sure they specify which object to filter on.");
         } else {
             throw new IllegalStateException("There are no objects!");
         }
@@ -340,11 +340,15 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(objectVarName +"."+ varName, compare, value));
+        if (objectVarName != null && objectVarName.length() > 0) {
+            filters.add(new FilterItem(objectVarName +"."+ varName, compare, value));
+        } else {
+            filters.add(new FilterItem(getOnlyVarName() +"."+ varName, compare, value));
+        }
     }
 
     public void addGroupBy(String varName) {
-        groupBys.add(DEFAULT_VAR +"."+ varName);
+        groupBys.add(DEFAULT_OBJ_VAR +"."+ varName);
     }
     
     public void addGroupBy(String objectVarName, String varName) {
@@ -352,7 +356,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     public void addOrderBy(String varName) {
-        orderBys.add(DEFAULT_VAR +"."+ varName);
+        orderBys.add(DEFAULT_OBJ_VAR +"."+ varName);
     }
     
     public void addOrderBy(String objectVarName, String varName) {
