@@ -9,7 +9,6 @@
  */
 package com.jdc.db.jpa.components;
 
-import com.jdc.components.*;
 import com.jdc.db.jpa.components.filters.JCalendarPickerFilter;
 import com.jdc.db.sql.query.SQLQueryBuilder;
 import com.jdc.db.shared.query.QueryCompareType;
@@ -19,7 +18,6 @@ import com.jdc.db.jpa.components.filters.JTextFieldFilter;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
 
 /**
  *
@@ -28,7 +26,8 @@ import javax.swing.*;
 public class JDBEntityColumnFilter {
     private FilterType filterType;
     private Component component;
-    private String classVarName;
+    private String objectVarName = null;
+    private String varName;
     private FilterComponent filterComponent;
     private QueryCompareType compareType;
     private int orGroupKey = SQLQueryBuilder.NO_OR_GROUP;
@@ -46,27 +45,48 @@ public class JDBEntityColumnFilter {
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */
-    public JDBEntityColumnFilter(Component component, String classVarName, QueryCompareType compareType) {
-        this(null, component, classVarName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    public JDBEntityColumnFilter(Component component, String varName, QueryCompareType compareType) {
+        this(null, component, varName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    }
+    
+    public JDBEntityColumnFilter(Component component, String objectVarName, String varName, QueryCompareType compareType) {
+        this(null, component, objectVarName, varName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    }
+    
+    
+    
+    /** Creates a new instance of JDBRecordColumnFilter */
+    public JDBEntityColumnFilter(FilterType forType, Component component, String varName, QueryCompareType compareType) {
+        this(forType, component, varName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    }
+    
+    public JDBEntityColumnFilter(FilterType forType, Component component, String objectVarName, String varName, QueryCompareType compareType) {
+        this(forType, component, objectVarName, varName, compareType, SQLQueryBuilder.NO_OR_GROUP);
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */
-    public JDBEntityColumnFilter(FilterType forType, Component component, String classVarName, QueryCompareType compareType) {
-        this(forType, component, classVarName, compareType, SQLQueryBuilder.NO_OR_GROUP);
+    public JDBEntityColumnFilter(FilterType forType, Component component, String varName, QueryCompareType compareType, int orGroupKey) {
+        this(forType, component, null, varName, compareType, orGroupKey);
     }
     
     /** Creates a new instance of JDBRecordColumnFilter */
-    public JDBEntityColumnFilter(FilterType forType, Component component, String classVarName, QueryCompareType compareType, int orGroupKey) {
+    public JDBEntityColumnFilter(FilterType forType, Component component, String objectVarName, String varName, QueryCompareType compareType, int orGroupKey) {
         this.filterType = forType;
         if (component == null) {
             throw new IllegalArgumentException("component cannot be null");
         }
         this.component = component;
 
-        if (classVarName == null || classVarName.length() == 0) {
+        if (varName == null || varName.length() == 0) {
             throw new IllegalArgumentException("columnName cannot be null or empty");
         }
-        this.classVarName = classVarName;
+        this.varName = varName;
+        
+        if (objectVarName != null && objectVarName.length() == 0) {
+            this.objectVarName = null;
+        } else {
+            this.objectVarName = objectVarName;
+        }
         
         if (compareType == null) {
             compareType = QueryCompareType.LIKE;
@@ -116,8 +136,16 @@ public class JDBEntityColumnFilter {
         }
     }
 
-    public String getClassVarName() {
-        return classVarName;
+    public void setObjectVarName(String objectVarName) {
+        this.objectVarName = objectVarName;
+    }
+
+    public String getObjectVarName() {
+        return objectVarName;
+    }
+    
+    public String getVarName() {
+        return varName;
     }
     
     public boolean ignoreComponentValue() {

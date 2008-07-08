@@ -242,10 +242,13 @@ public abstract class EditableEntityList<T extends Object> {
     /**
      * First item that should show in any attached JLookupComboBox's.  If null is
      * returned, then there is NO default item.
+     *
+     * NOTE: To set the default for an item that is already in the list, do this
+     * via object constructor or setNewItemDefaults(item), then set on the combobox via a binder.
      */
     public abstract ListItem getDefaultComboItem();
-
     
+
     // ***************** END of Abstract methods *********************
 
     private TableGroup getTableGroup(JPAEntityTable dbTable) {
@@ -477,13 +480,13 @@ public abstract class EditableEntityList<T extends Object> {
                     t = "edit";
                 }
 
-                JOptionPane.showMessageDialog(getParentComponent(dbTable), "Error", "Cannot " + t + " item, no item selected.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(getParentComponent(dbTable), "Cannot " + t + " item, no item selected.", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 // load existing
                 item = findItemByID(itemID);
 
                 if (item == null) {
-                    JOptionPane.showMessageDialog(getParentComponent(dbTable), "Error", "Show error. Cannot find item ID [" + itemID + "]", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(getParentComponent(dbTable), "Show error. Cannot find item ID [" + itemID + "]", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
@@ -778,7 +781,7 @@ public abstract class EditableEntityList<T extends Object> {
                     if (getDefaultComboItem() != null) {
                         itemLookupComboBox.setSelectedID(getDefaultComboItem().getListID());
                     } else {
-                        itemLookupComboBox.setSelectedID(-1);
+                            itemLookupComboBox.setSelectedID(-1);
                     }
                 }
             }
@@ -826,27 +829,33 @@ public abstract class EditableEntityList<T extends Object> {
 
         // add additional component filters as needed
         for (JDBEntityColumnFilter compFilter : tableGroup.getComponentFilters()) {
+            String objectVarName = compFilter.getObjectVarName();
+            if (objectVarName == null || objectVarName.length() == 0) {
+                objectVarName = JPAQueryBuilder.DEFAULT_OBJ_VAR;
+            }
+            
+            
             switch (compFilter.getFilterType()) {
                 case INT:
                     if (!compFilter.ignoreComponentValue()) {
                         int intValue = (Integer) compFilter.getValue();
-                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), intValue, compFilter.getOrGroupKey());
+                        qb.addFilter(objectVarName, compFilter.getVarName(), compFilter.getCompareType(), intValue, compFilter.getOrGroupKey());
                     }
                     break;
                 case STRING:
                     if (!compFilter.ignoreComponentValue()) {
                         String value = (String) compFilter.getValue();
-                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
+                        qb.addFilter(objectVarName, compFilter.getVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
                     }
                     break;
                 case DATE:
                     if (!compFilter.ignoreComponentValue()) {
                         Date value = (Date) compFilter.getValue();
-                        qb.addFilter(compFilter.getClassVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
+                        qb.addFilter(objectVarName, compFilter.getVarName(), compFilter.getCompareType(), value, compFilter.getOrGroupKey());
                     }
                     break;
                 default:
-                    throw new IllegalStateException("filter for column [" + compFilter.getClassVarName() + "] could not be added because it had an unknown value type");
+                    throw new IllegalStateException("filter for column [" + compFilter.getVarName() + "] could not be added because it had an unknown value type");
             }
         }
 
@@ -1023,75 +1032,6 @@ public abstract class EditableEntityList<T extends Object> {
         }
 
         return value;
-    }
-
-    private class TableGroup {
-
-        private Component parent;
-        private JPAEntityTable table;
-        private List<JDBEntityColumnFilter> componentFilters;
-        private EditableEntityListFilter filter;
-        private boolean columnsAlreadyAdded = false;
-
-        public TableGroup(JPAEntityTable table, Component parent, List<JDBEntityColumnFilter> componentFilters, EditableEntityListFilter filter) {
-            this.setTable(table);
-            this.setComponentFilters(componentFilters);
-            this.setFilter(filter);
-
-            if (parent == null) {
-                throw new IllegalStateException("parent cannot be null");
-            }
-
-            if (parent instanceof Dialog || parent instanceof Frame) {
-                this.setParent(parent);
-            } else {
-                throw new IllegalArgumentException("parent must be either a Dialog or Frame");
-            }
-        }
-
-        public Component getParent() {
-            return parent;
-        }
-
-        public void setParent(Component parent) {
-            this.parent = parent;
-        }
-
-        public JPAEntityTable getTable() {
-            return table;
-        }
-
-        public void setTable(JPAEntityTable table) {
-            this.table = table;
-        }
-
-        public List<JDBEntityColumnFilter> getComponentFilters() {
-            return componentFilters;
-        }
-
-        public void setComponentFilters(List<JDBEntityColumnFilter> componentFilters) {
-            if (componentFilters != null) {
-                this.componentFilters = componentFilters;
-            } else {
-                this.componentFilters = new ArrayList<JDBEntityColumnFilter>();
-            }
-        }
-
-        public boolean isColumnsAlreadyAdded() {
-            return columnsAlreadyAdded;
-        }
-
-        public void setColumnsAlreadyAdded(boolean columnsAlreadyAdded) {
-            this.columnsAlreadyAdded = columnsAlreadyAdded;
-        }
-
-        public EditableEntityListFilter getFilter() {
-            return filter;
-        }
-
-        public void setFilter(EditableEntityListFilter filter) {
-            this.filter = filter;
-        }
     }
 
     private class JLookupComboBoxGroup {

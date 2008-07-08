@@ -92,7 +92,7 @@ public class JDBEntityColumn {
         this.joinObjectClassName = joinObjectClassName;
         this.joinObjectName = joinObjectName;
         this.joinFromField = joinObjectName +"."+ joinObjectJoinVarName;
-        this.joinToField = JPAQueryBuilder.DEFAULT_VAR +"."+ joinColumnName;
+        this.joinToField = JPAQueryBuilder.DEFAULT_OBJ_VAR +"."+ joinColumnName;
     }
     
     
