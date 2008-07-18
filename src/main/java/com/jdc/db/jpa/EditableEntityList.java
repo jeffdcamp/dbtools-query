@@ -331,7 +331,14 @@ public abstract class EditableEntityList<T extends Object> {
         @Override
         public void mouseClicked(java.awt.event.MouseEvent evt) {
             if (evt.getClickCount() == editClickCount) {
-                showItem(table, table.getSelectedID(), true);
+                if (itemViewer == null) {
+                    // edit
+                    showItem(table, table.getSelectedID(), true);
+                } else {
+                    // view
+                    showItem(table, table.getSelectedID(), false);
+                }
+                
             }
         }
     }
@@ -511,7 +518,7 @@ public abstract class EditableEntityList<T extends Object> {
         }
 
         try {
-            // create and show food item dialog
+            // create and show item dialog
             if (editMode) {
                 editItem(parent, item);
             } else {
@@ -553,23 +560,23 @@ public abstract class EditableEntityList<T extends Object> {
      *
      * NOTE: REMEMBER TO CALL detachLookupComboBox(...) or you will have a memory leak!!!!!
      */
-    public void attachTable(JPAEntityTable dbTable, Component parent, List<JDBEntityColumnFilter> componentFilters, EditableEntityListFilter filter) {
-        if (dbTable == null) {
+    public void attachTable(JPAEntityTable table, Component parent, List<JDBEntityColumnFilter> componentFilters, EditableEntityListFilter filter) {
+        if (table == null) {
             throw new IllegalArgumentException("table cannot be null");
         }
 
-        TableGroup tableGroup = new TableGroup(dbTable, parent, componentFilters, filter);
+        TableGroup tableGroup = new TableGroup(table, parent, componentFilters, filter);
 
         // setup table
-        dbTable.setEditableEntityList(this);
-        initTable(dbTable);
+        table.setEditableEntityList(this);
+        initTable(table);
 
         // store for later
         tableGroups.add(tableGroup);
-        tableGroupsMap.put(dbTable, tableGroup);
+        tableGroupsMap.put(table, tableGroup);
 
         // execute initial search
-        executeSearch(dbTable);
+        executeSearch(table);
 
         // add listener so that the table can auto-detatch
         if (parent instanceof Window) {
