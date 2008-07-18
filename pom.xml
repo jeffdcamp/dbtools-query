@@ -5,11 +5,11 @@
     <groupId>jdc.db</groupId>
     <artifactId>db-commons</artifactId>
     <name>db-commons</name>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <url>http://maven.apache.org</url>
     
     <scm>
-        <connection>scm:svn:svn://localhost/db-commons/trunk</connection>
+        <connection>scm:svn:svn://localhost/db-commons/tags/db-commons-1.3</connection>
     </scm>
     
     <!-- deploy -->
