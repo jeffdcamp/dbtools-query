@@ -12,11 +12,15 @@
         <connection>scm:svn:svn://localhost/db-commons/trunk</connection>
     </scm>
     
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <!-- deploy -->
     <distributionManagement>
         <repository>
             <id>soupbowl.releases</id>
-            <url>http://www.soupbowl.net:7070/nexus/content/repositories/releases</url>
+            <url>http://jeffcamp.homeip.net:8080/nexus/content/repositories/releases</url>
         </repository>        
         <site>
             <id>soupbowl.site</id>
