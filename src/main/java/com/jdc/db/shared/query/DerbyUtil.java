@@ -31,7 +31,7 @@ public class DerbyUtil {
         }
         StringBuffer select = new StringBuffer();
         select.append("LOWER(").append(column).append(")");
-        
+
         if (before == after) {// default or two explicit stars
             select.append(" LIKE LOWER('%");
             select.append(QueryUtil.formatString(value, false));

@@ -7,7 +7,6 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-
 package com.jdc.db.shared.query;
 
 /**
@@ -21,26 +20,26 @@ public class PostgresqlUtil {
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
         boolean before = false;
-        if( value.indexOf('*') == 0 ) {
+        if (value.indexOf('*') == 0) {
             before = true;
             value = value.substring(1);
         }
         boolean after = false;
-        if( value.lastIndexOf('*') == (value.length() - 1) ) {
+        if (value.lastIndexOf('*') == (value.length() - 1)) {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
         StringBuffer select = new StringBuffer(column);
-        if ( before == after )   // default or two explicit stars
+        if (before == after) // default or two explicit stars
         {
             select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
             select.append("%'");
-        } else if ( before ) {
+        } else if (before) {
             select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
             select.append("'");
-        } else  // if endStar
+        } else // if endStar
         {
             select.append(" ilike '");
             select.append(QueryUtil.formatString(value, false));
@@ -48,5 +47,4 @@ public class PostgresqlUtil {
         }
         return select.toString();
     }
-    
 }
