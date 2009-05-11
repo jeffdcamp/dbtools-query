@@ -129,6 +129,23 @@ public class SQLQueryBuilder implements Cloneable {
         }
     }
 
+    public Query executeQuery(int firstRow, int numberOfRows) {
+        if (entityManager != null) {
+            Query q = entityManager.createNativeQuery(this.toString());
+
+            if (firstRow < 0) {
+                q.getResultList();
+            } else {
+                q.setMaxResults(numberOfRows).setFirstResult(firstRow).getResultList();
+            }
+
+            return q;
+        } else {
+            System.out.println("WARNING... executeQuery called with a null entityManager.");
+            return null;
+        }
+    }
+
     /**
      * Adds a column to the query
      * @return columnID (or the order in which it was added... 0 based)
@@ -429,12 +446,15 @@ public class SQLQueryBuilder implements Cloneable {
                     break;
                 case LIKE:
                 case LIKE_IGNORECASE:
+                    // handled later
                     filterCompare = "";
                     break;
             }
 
             if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
                 filter = field + filterCompare + value;
+            } else if(compare == QueryCompareType.IN) {
+                filter = field + " IN (" + value + ")";
             } else {
                 switch (compare) {
                     case LIKE:
