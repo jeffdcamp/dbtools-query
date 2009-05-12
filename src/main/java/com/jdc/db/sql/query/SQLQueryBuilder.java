@@ -30,16 +30,13 @@ public class SQLQueryBuilder implements Cloneable {
 
     public static final int NO_OR_GROUP = -1;
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
-
     private EntityManager entityManager = null;
     private List<Field> fields;
     private List<String> tables;
     private List<FilterItem> joins;
     private List<FilterItem> stdFilters; // just filters ANDed together
-
     private Map<Integer, List<FilterItem>> filtersMap;
     private List<String> andClauses; //extra and clauses
-
     private List<String> groupBys;
     private List<String> orderBys;
     private String selectClause;
@@ -66,14 +63,14 @@ public class SQLQueryBuilder implements Cloneable {
     @Override
     public Object clone() {
         Class thisClass = this.getClass();
-        
+
         SQLQueryBuilder clone;
         try {
             clone = (SQLQueryBuilder) thisClass.newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Could not clone QueryBuilder", e);
         }
-        
+
         if (entityManager != null) {
             clone.setEntityManager(entityManager);
         }
@@ -209,10 +206,14 @@ public class SQLQueryBuilder implements Cloneable {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
-            filters.add(new FilterItem(field, compare, formatString(value)));
-        } else {
-            filters.add(new FilterItem(field, compare, value));
+        switch (compare) {
+            case LIKE:
+            case LIKE_IGNORECASE:
+            case IN:
+                filters.add(new FilterItem(field, compare, value));
+                break;
+            default:
+                filters.add(new FilterItem(field, compare, formatString(value)));
         }
     }
 
@@ -451,11 +452,7 @@ public class SQLQueryBuilder implements Cloneable {
                     break;
             }
 
-            if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
-                filter = field + filterCompare + value;
-            } else if(compare == QueryCompareType.IN) {
-                filter = field + " IN (" + value + ")";
-            } else {
+            if (compare == QueryCompareType.LIKE || compare == QueryCompareType.LIKE_IGNORECASE) {
                 switch (compare) {
                     case LIKE:
                         filter = formatLikeClause(field, value);
@@ -466,6 +463,10 @@ public class SQLQueryBuilder implements Cloneable {
                     default:
                         filter = field + " LIKE '%" + value + "%'";
                 }
+            } else if (compare == QueryCompareType.IN) {
+                filter = field + " IN (" + value + ")";
+            } else {
+                filter = field + filterCompare + value;
 
             }
 

@@ -281,10 +281,14 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
-            filters.add(new FilterItem(objectVarName + "." + varName, compare, formatString(value)));
-        } else {
-            filters.add(new FilterItem(objectVarName + "." + varName, compare, value));
+        switch (compare) {
+            case LIKE:
+            case LIKE_IGNORECASE:
+            case IN:
+                filters.add(new FilterItem(objectVarName + "." + varName, compare, value));
+                break;
+            default:
+                filters.add(new FilterItem(objectVarName + "." + varName, compare, formatString(value)));
         }
     }
 
@@ -601,11 +605,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
             }
 
 
-            if (compare != QueryCompareType.LIKE && compare != QueryCompareType.LIKE_IGNORECASE) {
-                filter = field + filterCompare + value;
-            } else if(compare == QueryCompareType.IN) {
-                filter = field + " IN (" + value + ")";
-            } else {
+            if (compare == QueryCompareType.LIKE || compare == QueryCompareType.LIKE_IGNORECASE) {
                 if (type != FilterType.STRING) {
                     throw new IllegalStateException("Cannot have a like clause on this filter type [" + type + "] for field [" + field + "]");
                 }
@@ -620,6 +620,10 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
                         filter = field + " LIKE '%" + value + "%'";
                 }
 
+            } else if(compare == QueryCompareType.IN) {
+                filter = field + " IN (" + value + ")";
+            } else {
+                filter = field + filterCompare + value;
             }
 
             return filter;
