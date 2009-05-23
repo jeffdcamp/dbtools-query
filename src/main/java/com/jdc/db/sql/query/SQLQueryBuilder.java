@@ -293,6 +293,10 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     public String buildQuery() {
+        return buildQuery(false);
+    }
+
+    public String buildQuery(boolean countOnly) {
         selectClause = "";
         postSelectClause = "";
 
@@ -300,10 +304,15 @@ public class SQLQueryBuilder implements Cloneable {
         containsItems = false;
 
         // fields
-        if (fields.size() > 0) {
-            addListItems(query, fields);
+        // fields
+        if (countOnly) {
+            query.append("count(*)");
         } else {
-            query.append("*");
+            if (fields.size() > 0) {
+                addListItems(query, fields);
+            } else {
+                query.append("*");
+            }
         }
 
         // save select portion
@@ -343,14 +352,14 @@ public class SQLQueryBuilder implements Cloneable {
         }
 
         // add groupbys
-        if (groupBys.size() > 0) {
+        if (groupBys.size() > 0 && !countOnly) {
             query.append(" GROUP BY ");
             containsItems = false;
             addListItems(query, groupBys);
         }
 
-        // add groupbys
-        if (orderBys.size() > 0) {
+        // add orderbys
+        if (orderBys.size() > 0 && !countOnly) {
             query.append(" ORDER BY ");
             containsItems = false;
             addListItems(query, orderBys);

@@ -452,14 +452,16 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         }
 
         // add groupbys
-        if (groupBys.size() > 0) {
+        // don't include if this is for a count query
+        if (groupBys.size() > 0 && !countOnly) {
             query.append(" GROUP BY ");
             containsItems = false;
             addListItems(query, groupBys);
         }
 
-        // add groupbys
-        if (orderBys.size() > 0) {
+        // add orderbys
+        // don't include if this is for a count query
+        if (orderBys.size() > 0 && !countOnly) {
             query.append(" ORDER BY ");
             containsItems = false;
             addListItems(query, orderBys);
