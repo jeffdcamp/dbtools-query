@@ -1,0 +1,20 @@
+# use glob syntax.
+syntax: glob
+
+*~
+
+target/
+
+# NetBeans
+# nbactions.xml
+nb-configuration.xml
+
+# Eclipse
+.classpath
+.project
+.mymetadata
+
+# IDEA
+*.ipr
+*.iml
+*.iws
