@@ -9,7 +9,8 @@
     <url>http://maven.apache.org</url>
     
     <scm>
-        <connection>scm:svn:svn://localhost/db-commons/trunk</connection>
+        <connection>scm:hg:file://${basedir}</connection>
+        <developerConnection>scm:hg:file://${basedir}</developerConnection>
     </scm>
     
     <properties>
@@ -20,7 +21,7 @@
     <distributionManagement>
         <repository>
             <id>soupbowl.releases</id>
-            <url>http://jeffcamp.homeip.net:8080/nexus/content/repositories/releases</url>
+            <url>http://www.soupbowl.net/nexus/content/repositories/releases</url>
         </repository>        
         <site>
             <id>soupbowl.site</id>
@@ -39,14 +40,14 @@
         <dependency>
             <groupId>jdc</groupId>
             <artifactId>jdc-comp</artifactId>
-            <version>2.7-SNAPSHOT</version>
+            <version>2.7</version>
             <scope>compile</scope>
         </dependency>
         
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.5</version>
+            <version>4.7</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -54,7 +55,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>RELEASE</version>
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
@@ -62,47 +62,4 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>netbeans-public</id>
-            <activation>
-                <property>
-                    <name>netbeans.execution</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <classpathPrefix>lib</classpathPrefix>
-                                    <mainClass>com.jdc.jpa.jpacommons.test.TestFrame</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>nb</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>directory</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptor>${basedir}/src/main/assemblies/netbeans-run.xml</descriptor>
-                                    <finalName>executable</finalName>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
