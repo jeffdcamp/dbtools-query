@@ -2,34 +2,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>jdc</groupId>
+        <artifactId>jdc-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
     <groupId>jdc.db</groupId>
     <artifactId>db-commons</artifactId>
     <name>db-commons</name>
     <version>1.4-SNAPSHOT</version>
     <url>http://maven.apache.org</url>
-    
+
     <scm>
         <connection>scm:hg:file://${basedir}</connection>
         <developerConnection>scm:hg:file://${basedir}</developerConnection>
     </scm>
-    
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <!-- deploy -->
     <distributionManagement>
-        <repository>
-            <id>soupbowl.releases</id>
-            <url>http://www.soupbowl.net/nexus/content/repositories/releases</url>
-        </repository>        
         <site>
             <id>soupbowl.site</id>
             <name>Soupbowl Site</name>
-            <url>scp://www.soupbowl.net/srv/www/soupbowl.net/htdocs/dev/sites/dbcommons</url>
+            <url>scp://www.soupbowl.net/srv/www/soupbowl.net/dev/sites/dbcommons</url>
         </site>
     </distributionManagement>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax.persistence</groupId>
@@ -37,22 +34,5 @@
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.7</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
