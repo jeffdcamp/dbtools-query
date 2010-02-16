@@ -199,24 +199,32 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         return fields.size() - 1;
     }
 
+    public int addFieldObject(String object) {
+        fields.add(new Field(object));
+        return fields.size() - 1;
+    }
+
     private void checkObjectForField(String objectName) {
         if (!objectMap.containsKey(objectName)) {
             throw new IllegalArgumentException("object named [" + objectName + "] does not exist.  Be sure to call addObject(objectClassName) before adding fields for this object.");
         }
     }
-    public static final String DEFAULT_OBJ_VAR = "dfltObj";
+    public static final String DEFAULT_OBJ_VAR = "o";
     private boolean internalVarUsed = false;
     private Map<String, String> objectMap = new HashMap<String, String>();
 
-    public void addObject(String objectClassName) {
-        if (objectMap.size() > 0) {
-            throw new IllegalStateException("Cannot call addObject(objectClassName) multiple times.  Use addObject(objectClassName, varNameForObject)");
-        }
+    public String addObject(String objectClassName) {
+        String varNameForObject = DEFAULT_OBJ_VAR;
 
-        addObject(objectClassName, DEFAULT_OBJ_VAR);
+        if (objectMap.size() > 0) {
+            varNameForObject += objectMap.size() + 1;
+        }
+        addObject(objectClassName, varNameForObject);
+
+        return varNameForObject;
     }
 
-    public void addObject(String objectClassName, String varNameForObject) {
+    public String addObject(String objectClassName, String varNameForObject) {
         if (varNameForObject.equals(DEFAULT_OBJ_VAR)) {
             internalVarUsed = true;
         }
@@ -225,10 +233,34 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         objects.add(objectClassName + " " + varNameForObject);
 
         objectMap.put(varNameForObject, objectClassName);
+
+        return varNameForObject;
+    }
+
+    public String addObject(String objectClassName, String joinField, String joinToObjectName, String joinToObjectField) {
+        String varNameForObject = addObject(objectClassName);
+
+        // join
+        addJoin(varNameForObject, joinField, joinToObjectName, joinToObjectField);
+
+        return varNameForObject;
+    }
+
+    public String addObject(String objectClassName, String varNameForObject, String joinField, String joinToObjectName, String joinToObjectField) {
+        addObject(objectClassName, varNameForObject);
+
+        // join
+        addJoin(varNameForObject, joinField, joinToObjectName, joinToObjectField);
+
+        return varNameForObject;
     }
 
     public void addJoin(String field, String field2) {
         joins.add(new FilterItem(field, QueryCompareType.EQUAL, field2));
+    }
+
+    public void addJoin(String objName1, String field, String objName2, String field2) {
+        joins.add(new FilterItem(objName1 + '.' + field, QueryCompareType.EQUAL, objName2 + '.' + field2));
     }
 
     private List<FilterItem> getFilters(int orGroupKey) {

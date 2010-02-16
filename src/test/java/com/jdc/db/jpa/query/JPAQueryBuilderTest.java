@@ -1,15 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.jdc.db.jpa.query;
 
-import java.sql.Time;
-import java.util.Date;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -102,5 +92,24 @@ public class JPAQueryBuilderTest {
         assertEquals("SELECT a."+ P_LAST_NAME +" FROM Person a", query2);
     }
 
+    @Test
+    public void testMultiObjQuery() {
+        // using default var
+        JPAQueryBuilder qb1 = new JPAQueryBuilder();
+        String p = qb1.addObject("Person");
+        String s = qb1.addObject("Status", "ID", p, "statusID");
+        String c = qb1.addObject("Category", "ID", p, "categoryID");
+
+        qb1.addFieldObject(p);
+        qb1.addField(s, "name");
+        qb1.addField(c, "name");
+
+        qb1.addFilter(p, "ID", 5);
+
+        String query1 = qb1.toString();
+
+        assertEquals("SELECT "+ p +", "+ s +".name, "+ c +".name FROM Person "+ p +", Status "+ s +", Category "+ c +" WHERE o2.ID = o.statusID AND o3.ID = o.categoryID AND o.ID = 5", query1);
+
+    }
 
 }
