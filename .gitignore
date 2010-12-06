@@ -1,15 +1,12 @@
-# use glob syntax.
-syntax: glob
-
+# Temp files
 *~
 
-target/
-
 # NetBeans
-# nbactions.xml
 nb-configuration.xml
+# nbactions.xml
 
 # Eclipse
+.settings
 .classpath
 .project
 .mymetadata
@@ -18,3 +15,6 @@ nb-configuration.xml
 *.ipr
 *.iml
 *.iws
+
+# Maven
+target/
