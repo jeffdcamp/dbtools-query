@@ -13,13 +13,13 @@ package com.jdc.db.shared.query;
  *
  * @author Jeff
  */
-public class MysqlUtil {
+public final class MysqlUtil {
 
     private MysqlUtil() {
     }
 
     public static String formatLikeClause(String column, String value) {
-        StringBuffer sb = new StringBuffer(value.length());
+        StringBuilder sb = new StringBuilder(value.length());
         char[] chars = value.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             if (chars[i] == '%') {

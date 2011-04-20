@@ -29,9 +29,8 @@ public final class OracleUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuffer select = new StringBuffer("lower("+column+")");
-        if (before == after) // default or two explicit stars
-        {
+        StringBuilder select = new StringBuilder("lower(" + column + ")");
+        if (before == after) { // default or two explicit stars
             select.append(" LIKE '%");
             select.append(QueryUtil.formatString(value, false).toLowerCase());
             select.append("%'");
@@ -39,8 +38,7 @@ public final class OracleUtil {
             select.append(" LIKE '%");
             select.append(QueryUtil.formatString(value, false).toLowerCase());
             select.append("'");
-        } else // if endStar
-        {
+        } else { // if endStar
             select.append(" LIKE '");
             select.append(QueryUtil.formatString(value, false).toLowerCase());
             select.append("%'");

@@ -13,7 +13,7 @@ package com.jdc.db.shared.query;
  *
  * @author Jeff
  */
-public class DerbyUtil {
+public final class DerbyUtil {
 
     private DerbyUtil() {
     }
@@ -29,10 +29,10 @@ public class DerbyUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuffer select = new StringBuffer();
+        StringBuilder select = new StringBuilder();
         select.append("LOWER(").append(column).append(")");
 
-        if (before == after) {// default or two explicit stars
+        if (before == after) { // default or two explicit stars
             select.append(" LIKE LOWER('%");
             select.append(QueryUtil.formatString(value, false));
             select.append("%')");

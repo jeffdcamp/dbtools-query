@@ -42,7 +42,7 @@ public class SQLQueryBuilder implements Cloneable {
     private String selectClause;
     private String postSelectClause;
 
-    /** Creates a new instance of QueryMaker */
+    /** Creates a new instance of QueryMaker. */
     public SQLQueryBuilder() {
         reset();
     }
@@ -103,7 +103,7 @@ public class SQLQueryBuilder implements Cloneable {
         return clone;
     }
 
-    public void reset() {
+    public final void reset() {
         fields = new ArrayList<Field>();
         tables = new ArrayList<String>();
         joins = new ArrayList<FilterItem>();
@@ -144,7 +144,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     /**
-     * Adds a column to the query
+     * Adds a column to the query.
      * @return columnID (or the order in which it was added... 0 based)
      */
     public int addField(String fieldName) {
@@ -153,7 +153,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     /**
-     * Adds a column to the query
+     * Adds a column to the query.
      * @return columnID (or the order in which it was added... 0 based)
      */
     public int addField(String fieldName, String alias) {
@@ -162,7 +162,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     /**
-     * Adds a column to the query
+     * Adds a column to the query.
      * @return columnID (or the order in which it was added... 0 based)
      */
     public int addField(String tablename, String fieldName, String alias) {
@@ -537,7 +537,7 @@ public class SQLQueryBuilder implements Cloneable {
         this.entityManager = entityManager;
     }
 
-    public static final String formatString(String str) {
+    public static String formatString(String str) {
         return formatString(str, true);
     }
 

@@ -42,7 +42,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     private String selectClause;
     private String postSelectClause;
 
-    /** Creates a new instance of QueryMaker */
+    /** Creates a new instance of QueryMaker. */
     public JPAQueryBuilder() {
         reset();
     }
@@ -104,7 +104,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         return clone;
     }
 
-    public void reset() {
+    public final void reset() {
         fields = new ArrayList<Field>();
         objects = new ArrayList<String>();
         varNames = new ArrayList<String>();
@@ -177,7 +177,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     /**
-     * Adds a column to the query
+     * Adds a column to the query.
      * @return columnID (or the order in which it was added... 0 based)
      */
     public int addField(String varName) {
@@ -190,7 +190,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     /**
-     * Adds a column to the query
+     * Adds a column to the query.
      * @return columnID (or the order in which it was added... 0 based)
      */
     public int addField(String object, String varName) {
@@ -206,7 +206,8 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
 
     private void checkObjectForField(String objectName) {
         if (!objectMap.containsKey(objectName)) {
-            throw new IllegalArgumentException("object named [" + objectName + "] does not exist.  Be sure to call addObject(objectClassName) before adding fields for this object.");
+            throw new IllegalArgumentException("object named [" + objectName
+                    + "] does not exist.  Be sure to call addObject(objectClassName) before adding fields for this object.");
         }
     }
     public static final String DEFAULT_OBJ_VAR = "o";
@@ -283,7 +284,8 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         if (varNames.size() == 1) {
             return varNames.get(0);
         } else if (varNames.size() > 1) {
-            throw new IllegalStateException("Cannot determine which objectVarName to use. (There are more than one object in this query).  Check your filters to be sure they specify which object to filter on.");
+            throw new IllegalStateException("Cannot determine which objectVarName to use. (There are more than one object in this query).  "
+                    + "Check your filters to be sure they specify which object to filter on.");
         } else {
             throw new IllegalStateException("There are no objects!");
         }
@@ -654,7 +656,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
                         filter = field + " LIKE '%" + value + "%'";
                 }
 
-            } else if(compare == QueryCompareType.IN) {
+            } else if (compare == QueryCompareType.IN) {
                 filter = field + " IN (" + value + ")";
             } else {
                 filter = field + filterCompare + value;
@@ -700,7 +702,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         this.entityManager = dbManager;
     }
 
-    public static final String formatString(String str) {
+    public static String formatString(String str) {
         return formatString(str, true);
     }
 
@@ -740,7 +742,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     /**
-     * Create count(*) query based on existing Builder tables and filters that have already been added to this query
+     * Create count(*) query based on existing Builder tables and filters that have already been added to this query.
      * @param objectClassName
      * @return
      */
@@ -858,7 +860,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     /**
-     * Find record based on given filter
+     * Find record based on given filter.
      * @return
      */
     public List<T> findRecords() {
@@ -894,7 +896,7 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
     }
 
     /**
-     * Find record based on given filter
+     * Find record based on given filter.
      * @return
      */
     public T findRecord() {

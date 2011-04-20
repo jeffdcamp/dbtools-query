@@ -13,7 +13,7 @@ package com.jdc.db.shared.query;
  *
  * @author Jeff
  */
-public class FirebirdUtil {
+public final class FirebirdUtil {
 
     private FirebirdUtil() {
     }
@@ -29,7 +29,7 @@ public class FirebirdUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuffer select = new StringBuffer(column);
+        StringBuilder select = new StringBuilder(column);
         if (before == after) // default or two explicit stars
         {
             select.append(" containing '");

@@ -11,19 +11,19 @@ package com.jdc.db.shared.query;
  *
  * @author Jeff
  */
-public class QueryUtil {
+public final class QueryUtil {
 
     private QueryUtil() {
     }
 
-    public static final String formatString(String str) {
+    public static String formatString(String str) {
         return formatString(str, true);
     }
 
     public static String formatString(String str, boolean wrap) {
         int length = str.length();
         char[] input = str.toCharArray();
-        StringBuffer temp = new StringBuffer(length + 2);
+        StringBuilder temp = new StringBuilder(length + 2);
 
         if (wrap) {
             temp.append('\'');
@@ -55,9 +55,8 @@ public class QueryUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuffer select = new StringBuffer(column);
-        if (before == after) // default or two explicit stars
-        {
+        StringBuilder select = new StringBuilder(column);
+        if (before == after) { // default or two explicit stars
             select.append(" LIKE '%");
             select.append(formatString(value, false));
             select.append("%'");
@@ -65,8 +64,7 @@ public class QueryUtil {
             select.append(" LIKE '%");
             select.append(formatString(value, false));
             select.append("'");
-        } else // if endStar
-        {
+        } else { // if endStar
             select.append(" LIKE '");
             select.append(formatString(value, false));
             select.append("%'");

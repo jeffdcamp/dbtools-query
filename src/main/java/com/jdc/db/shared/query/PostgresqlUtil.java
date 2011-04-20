@@ -13,7 +13,7 @@ package com.jdc.db.shared.query;
  *
  * @author Jeff
  */
-public class PostgresqlUtil {
+public final class PostgresqlUtil {
 
     private PostgresqlUtil() {
     }
@@ -29,9 +29,8 @@ public class PostgresqlUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuffer select = new StringBuffer(column);
-        if (before == after) // default or two explicit stars
-        {
+        StringBuilder select = new StringBuilder(column);
+        if (before == after) { // default or two explicit stars
             select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
             select.append("%'");
@@ -39,8 +38,7 @@ public class PostgresqlUtil {
             select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
             select.append("'");
-        } else // if endStar
-        {
+        } else { // if endStar
             select.append(" ilike '");
             select.append(QueryUtil.formatString(value, false));
             select.append("%'");
