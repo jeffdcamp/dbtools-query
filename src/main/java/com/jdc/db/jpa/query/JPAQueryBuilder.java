@@ -11,15 +11,12 @@ package com.jdc.db.jpa.query;
 
 import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryUtil;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -407,8 +404,18 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         orderBys.add(DEFAULT_OBJ_VAR + "." + varName);
     }
 
+    public void addOrderBy(String varName, boolean ascending) {
+        String direction = ascending ? "ASC" : "DESC";
+        orderBys.add(DEFAULT_OBJ_VAR + "." + varName + " " + direction);
+    }
+
     public void addOrderBy(String objectVarName, String varName) {
-        orderBys.add(objectVarName + "." + varName);
+        addOrderBy(objectVarName, varName, true);
+    }
+
+    public void addOrderBy(String objectVarName, String varName, boolean ascending) {
+        String direction = ascending ? "ASC" : "DESC";
+        orderBys.add(objectVarName + "." + varName + " " + direction);
     }
 
     public void addAndCalause(String c) {

@@ -11,16 +11,12 @@ package com.jdc.db.sql.query;
 
 import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryUtil;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -286,6 +282,11 @@ public class SQLQueryBuilder implements Cloneable {
 
     public void addOrderBy(String item) {
         orderBys.add(item);
+    }
+
+    public void addOrderBy(String item, boolean ascending) {
+        String direction = ascending ? "ASC" : "DESC";
+        orderBys.add(item + " " + direction);
     }
 
     public void addAndCalause(String c) {
