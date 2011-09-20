@@ -7,8 +7,10 @@
  */
 package com.jdc.db.shared.query;
 
+import javax.persistence.Query;
+import java.util.List;
+
 /**
- *
  * @author Jeff
  */
 public final class QueryUtil {
@@ -74,5 +76,14 @@ public final class QueryUtil {
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
         return formatLikeClause(column, value);
+    }
+
+    public static <T> T getSingleResult(Query query) {
+        query.setMaxResults(1);
+        List<?> list = query.getResultList();
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        return (T) list.get(0);
     }
 }
