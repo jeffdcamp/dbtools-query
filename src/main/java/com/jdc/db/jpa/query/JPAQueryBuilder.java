@@ -323,42 +323,42 @@ public class JPAQueryBuilder<T extends Object> implements Cloneable {
         }
     }
 
-    public void addFilter(String varName, int value) {
+    public void addFilter(String varName, Number value) {
         addFilter(getOnlyVarName(), varName, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String objectVarName, String varName, int value) {
+    public void addFilter(String objectVarName, String varName, Number value) {
         addFilter(objectVarName, varName, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String varName, int value, int orGroupKey) {
+    public void addFilter(String varName, Number value, int orGroupKey) {
         addFilter(getOnlyVarName(), varName, value, orGroupKey);
     }
 
-    public void addFilter(String objectVarName, String varName, int value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, Number value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(objectVarName + "." + varName, QueryCompareType.EQUAL, Integer.toString(value)));
+        filters.add(new FilterItem(objectVarName + "." + varName, QueryCompareType.EQUAL, value.toString()));
     }
 
-    public void addFilter(String varName, QueryCompareType compare, int value) {
+    public void addFilter(String varName, QueryCompareType compare, Number value) {
         addFilter(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String objectVarName, String varName, QueryCompareType compare, int value) {
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, Number value) {
         addFilter(objectVarName, varName, compare, value, NO_OR_GROUP);
     }
 
-    public void addFilter(String varName, QueryCompareType compare, int value, int orGroupKey) {
+    public void addFilter(String varName, QueryCompareType compare, Number value, int orGroupKey) {
         addFilter(getOnlyVarName(), varName, compare, value, orGroupKey);
     }
 
-    public void addFilter(String objectVarName, String varName, QueryCompareType compare, int value, int orGroupKey) {
+    public void addFilter(String objectVarName, String varName, QueryCompareType compare, Number value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
-        filters.add(new FilterItem(objectVarName + "." + varName, compare, Integer.toString(value)));
+        filters.add(new FilterItem(objectVarName + "." + varName, compare, value.toString()));
     }
 
     public void addFilter(String varName, Date value) {
