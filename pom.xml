@@ -5,13 +5,12 @@
     <parent>
         <groupId>jdc</groupId>
         <artifactId>jdc-parent</artifactId>
-        <version>1.5.0</version>
+        <version>1.5.2</version>
     </parent>
     <groupId>jdc.db</groupId>
     <artifactId>db-commons</artifactId>
     <name>db-commons</name>
     <version>1.5.1-SNAPSHOT</version>
-    <url>http://maven.apache.org</url>
 
     <scm>
         <connection>scm:git:file://${basedir}</connection>
@@ -22,7 +21,7 @@
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
-            <version>1.0</version>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
