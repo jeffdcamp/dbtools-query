@@ -5,7 +5,7 @@
     <parent>
         <groupId>jdc</groupId>
         <artifactId>jdc-parent</artifactId>
-        <version>1.5.2</version>
+        <version>1.5.3</version>
     </parent>
     <groupId>jdc.db</groupId>
     <artifactId>db-commons</artifactId>
@@ -16,6 +16,21 @@
         <connection>scm:git:file://${basedir}</connection>
         <developerConnection>scm:git:file://${basedir}</developerConnection>
     </scm>
+
+    <repositories>
+        <repository>
+            <id>soupbowl.nexus</id>
+            <name>Soupbowl Nexus Mirror</name>
+            <url>http://www.soupbowl.net/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>soupbowl.nexus</id>
+            <name>Soupbowl Nexus Mirror</name>
+            <url>http://www.soupbowl.net/nexus/content/groups/public</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <dependency>
