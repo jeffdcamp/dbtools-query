@@ -5,7 +5,7 @@
     <parent>
         <groupId>jdc</groupId>
         <artifactId>jdc-parent</artifactId>
-        <version>1.5.3</version>
+        <version>1.5.6</version>
     </parent>
     <groupId>jdc.db</groupId>
     <artifactId>db-commons</artifactId>
