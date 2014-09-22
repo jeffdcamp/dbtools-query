@@ -10,35 +10,42 @@
 package com.jdc.db.sql.query;
 
 import com.jdc.db.shared.query.QueryCompareType;
+import com.jdc.db.shared.query.QueryJoinType;
 import com.jdc.db.shared.query.QueryUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
 /**
  *
- * @author  jeff
+ * @author jeff
  */
 public class SQLQueryBuilder implements Cloneable {
 
     public static final int NO_OR_GROUP = -1;
+    public static final String DEFAULT_QUERY_PARAMETER = "?";
+
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
     private EntityManager entityManager = null;
+    private Boolean distinct = null;
     private List<Field> fields;
     private List<String> tables;
+    private List<String> tableJoins;
     private List<FilterItem> joins;
-    private List<FilterItem> stdFilters; // just filters ANDed together
+    private List<FilterItem> filters; // just filters ANDed together
     private Map<Integer, List<FilterItem>> filtersMap;
     private List<String> andClauses; //extra and clauses
     private List<String> groupBys;
     private List<String> orderBys;
     private String selectClause;
     private String postSelectClause;
+    private String queryParameter = DEFAULT_QUERY_PARAMETER;
 
-    /** Creates a new instance of QueryMaker. */
+    /**
+     * Creates a new instance.
+     */
     public SQLQueryBuilder() {
         reset();
     }
@@ -57,7 +64,9 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
+        super.clone();
+
         Class thisClass = this.getClass();
 
         SQLQueryBuilder clone;
@@ -72,18 +81,17 @@ public class SQLQueryBuilder implements Cloneable {
         }
 
         // mutable.... create new objects!
+        clone.distinct = this.distinct;
         clone.fields = new ArrayList<Field>(fields);
         clone.tables = new ArrayList<String>(tables);
 
+        clone.tableJoins = new ArrayList<String>(tableJoins);
         clone.joins = new ArrayList<FilterItem>(joins);
-        clone.stdFilters = new ArrayList<FilterItem>(stdFilters);
+        clone.filters = new ArrayList<FilterItem>(filters);
 
         // filters Map
         clone.filtersMap = new HashMap<Integer, List<FilterItem>>();
-        Iterator<Entry<Integer, List<FilterItem>>> itr = filtersMap.entrySet().iterator();
-        while (itr.hasNext()) {
-            Entry<Integer, List<FilterItem>> e = itr.next();
-
+        for (Entry<Integer, List<FilterItem>> e : filtersMap.entrySet()) {
             List<FilterItem> clonedFilters = new ArrayList<FilterItem>(e.getValue());
             clone.filtersMap.put(e.getKey(), clonedFilters);
         }
@@ -99,11 +107,13 @@ public class SQLQueryBuilder implements Cloneable {
         return clone;
     }
 
-    public final void reset() {
+    public void reset() {
+        distinct = false;
         fields = new ArrayList<Field>();
         tables = new ArrayList<String>();
+        tableJoins = new ArrayList<String>();
         joins = new ArrayList<FilterItem>();
-        stdFilters = new ArrayList<FilterItem>();
+        filters = new ArrayList<FilterItem>();
         filtersMap = new HashMap<Integer, List<FilterItem>>();
         andClauses = new ArrayList<String>();
         groupBys = new ArrayList<String>();
@@ -111,6 +121,20 @@ public class SQLQueryBuilder implements Cloneable {
 
         selectClause = "";
         postSelectClause = "";
+    }
+
+    public SQLQueryBuilder apply(SQLQueryBuilder sqlQueryBuilder) {
+        distinct = distinct == null ? sqlQueryBuilder.distinct : distinct;
+        fields.addAll(sqlQueryBuilder.getFields());
+        tables.addAll(sqlQueryBuilder.getTables());
+        tableJoins.addAll(sqlQueryBuilder.getTableJoins());
+        joins.addAll(sqlQueryBuilder.getJoins());
+        filters.addAll(sqlQueryBuilder.getFilters());
+        filtersMap.putAll(sqlQueryBuilder.getFiltersMap());
+        andClauses.addAll(sqlQueryBuilder.getAndClauses());
+        groupBys.addAll(sqlQueryBuilder.getGroupBys());
+        orderBys.addAll(sqlQueryBuilder.getOrderBys());
+        return this;
     }
 
     public Query executeQuery() {
@@ -141,44 +165,83 @@ public class SQLQueryBuilder implements Cloneable {
 
     /**
      * Adds a column to the query.
-     * @return columnID (or the order in which it was added... 0 based)
      */
-    public int addField(String fieldName) {
+    public SQLQueryBuilder field(String fieldName) {
         fields.add(new Field(fieldName));
-        return fields.size() - 1;
+        return this;
     }
 
     /**
      * Adds a column to the query.
-     * @return columnID (or the order in which it was added... 0 based)
      */
-    public int addField(String fieldName, String alias) {
+    public SQLQueryBuilder field(String fieldName, String alias) {
         fields.add(new Field(fieldName, alias));
-        return fields.size() - 1;
+        return this;
     }
 
     /**
      * Adds a column to the query.
+     *
      * @return columnID (or the order in which it was added... 0 based)
      */
-    public int addField(String tablename, String fieldName, String alias) {
+    public SQLQueryBuilder addField(String tablename, String fieldName, String alias) {
         fields.add(new Field(tablename + "." + fieldName, alias));
-        return fields.size() - 1;
+        return this;
     }
 
-    public void addTable(String tableName) {
+    public SQLQueryBuilder fields(String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            field(fieldName);
+        }
+        return this;
+    }
+
+    public SQLQueryBuilder fields(String[]... fieldNamesWithAlias) {
+        for (String[] fieldNameWithAlias : fieldNamesWithAlias) {
+            switch (fieldNameWithAlias.length) {
+                case 1:
+                    field(fieldNameWithAlias[0]);
+                    break;
+                case 2:
+                    field(fieldNameWithAlias[0], fieldNameWithAlias[1]);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported number of strings for fieldNameWithAlias: [" + fieldNameWithAlias + "]");
+            }
+        }
+        return this;
+    }
+
+    public SQLQueryBuilder table(String tableName) {
         tables.add(tableName);
+        return this;
     }
 
-    public void addJoin(String field, String field2) {
-        joins.add(new FilterItem(field, QueryCompareType.EQUAL, field2));
+    public SQLQueryBuilder table(String tableName, String alias) {
+        tables.add(tableName + " " + alias);
+        return this;
+    }
+
+    public SQLQueryBuilder join(String field1, String field2) {
+        joins.add(new FilterItem(field1, QueryCompareType.EQUAL, field2));
+        return this;
+    }
+
+    public SQLQueryBuilder join(String tableName, String field1, String field2) {
+        join(QueryJoinType.JOIN, tableName, field1, field2);
+        return this;
+    }
+
+    public SQLQueryBuilder join(QueryJoinType joinType, String tableName, String field1, String field2) {
+        tableJoins.add(" " + joinType.getJoinText() + " " + tableName + " ON " + field1 + " = " + field2);
+        return this;
     }
 
     private List<FilterItem> getFilters(int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters;
         if (orGroupKey == NO_OR_GROUP) {
-            filters = stdFilters;
+            filters = this.filters;
         } else {
             filters = filtersMap.get(orGroupKey);
             if (filters == null) {
@@ -190,15 +253,22 @@ public class SQLQueryBuilder implements Cloneable {
         return filters;
     }
 
-    public void addFilter(String field, String value) {
-        addFilter(field, QueryCompareType.EQUAL, value);
+    public SQLQueryBuilder addFilter(String field, Object value) {
+        addFilterToGroup(field, value, NO_OR_GROUP);
+        return this;
     }
 
-    public void addFilter(String field, QueryCompareType compare, String value) {
-        addFilter(field, compare, value, NO_OR_GROUP);
+    public SQLQueryBuilder addFilterToGroup(String field, Object value, int orGroupKey) {
+        addFilterToGroup(field, QueryCompareType.EQUAL, value, orGroupKey);
+        return this;
     }
 
-    public void addFilter(String field, QueryCompareType compare, String value, int orGroupKey) {
+    public SQLQueryBuilder addFilter(String field, QueryCompareType compare, Object value) {
+        addFilterToGroup(field, compare, value, NO_OR_GROUP);
+        return this;
+    }
+
+    public SQLQueryBuilder addFilterToGroup(String field, QueryCompareType compare, Object value, int orGroupKey) {
         // get the filters for the given OR key
         List<FilterItem> filters = getFilters(orGroupKey);
 
@@ -209,88 +279,36 @@ public class SQLQueryBuilder implements Cloneable {
                 filters.add(new FilterItem(field, compare, value));
                 break;
             default:
-                filters.add(new FilterItem(field, compare, formatString(value)));
+                if (value instanceof String && !value.equals(queryParameter)) {
+                    filters.add(new FilterItem(field, compare, formatString((String) value)));
+                } else if (value instanceof Boolean) {
+                    filters.add(new FilterItem(field, compare, formatBoolean((Boolean) value)));
+                } else {
+                    filters.add(new FilterItem(field, compare, value));
+                }
         }
+        return this;
     }
 
-    public void addFilter(String field, int value) {
-        addFilter(field, value, NO_OR_GROUP);
-    }
-
-    public void addFilter(String field, int value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(field, QueryCompareType.EQUAL, Integer.toString(value)));
-    }
-
-    public void addFilter(int field, QueryCompareType compare, int value) {
-        addFilter(field, compare, value, NO_OR_GROUP);
-    }
-
-    public void addFilter(int field, QueryCompareType compare, int value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(Integer.toString(field), compare, Integer.toString(value)));
-    }
-
-    public void addFilter(String field, QueryCompareType compare, int value) {
-        addFilter(field, compare, value, NO_OR_GROUP);
-    }
-
-    public void addFilter(String field, QueryCompareType compare, int value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(field, compare, Integer.toString(value)));
-    }
-
-    public void addFilterTimeStamp(String field, Date value) {
-        addFilterTimeStamp(field, QueryCompareType.EQUAL, value);
-    }
-
-    public void addFilterTimeStamp(String field, QueryCompareType compare, Date value) {
-        addFilterTimeStamp(field, compare, value, NO_OR_GROUP);
-    }
-
-    public void addFilterTimeStamp(String field, QueryCompareType compare, Date value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(field, compare, formatDateTime(value)));
-    }
-
-    public void addFilterDateOnly(String field, Date value) {
-        addFilterDateOnly(field, QueryCompareType.EQUAL, value);
-    }
-
-    public void addFilterDateOnly(String field, QueryCompareType compare, Date value) {
-        addFilterDateOnly(field, compare, value, NO_OR_GROUP);
-    }
-
-    public void addFilterDateOnly(String field, QueryCompareType compare, Date value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<FilterItem> filters = getFilters(orGroupKey);
-
-        filters.add(new FilterItem(field, compare, formatDate(value)));
-    }
-
-    public void addGroupBy(String item) {
+    public SQLQueryBuilder groupBy(String item) {
         groupBys.add(item);
+        return this;
     }
 
-    public void addOrderBy(String item) {
+    public SQLQueryBuilder orderBy(String item) {
         orderBys.add(item);
+        return this;
     }
 
-    public void addOrderBy(String item, boolean ascending) {
+    public SQLQueryBuilder orderBy(String item, boolean ascending) {
         String direction = ascending ? "ASC" : "DESC";
         orderBys.add(item + " " + direction);
+        return this;
     }
 
-    public void addAndCalause(String c) {
+    public SQLQueryBuilder andCalause(String c) {
         andClauses.add(c);
+        return this;
     }
 
     public String buildQuery() {
@@ -301,16 +319,18 @@ public class SQLQueryBuilder implements Cloneable {
         selectClause = "";
         postSelectClause = "";
 
-        StringBuffer query = new StringBuffer("SELECT ");
-        containsItems = false;
+        StringBuilder query = new StringBuilder("SELECT ");
 
-        // fields
+        if (distinct) {
+            query.append("DISTINCT ");
+        }
+
         // fields
         if (countOnly) {
             query.append("count(*)");
         } else {
             if (fields.size() > 0) {
-                addListItems(query, fields);
+                addListItems(query, fields, 0);
             } else {
                 query.append("*");
             }
@@ -320,50 +340,57 @@ public class SQLQueryBuilder implements Cloneable {
         selectClause = query.toString();
 
         // table names
-        query = new StringBuffer();
+        query = new StringBuilder();
         query.append(" FROM ");
-        containsItems = false;
-        addListItems(query, tables);
+        addListItems(query, tables, 0);
+        addListItems(query, tableJoins, "", 0);
 
         // add filters
-        if (joins.size() > 0 || stdFilters.size() > 0 || filtersMap.size() > 0 || andClauses.size() > 0) {
+        if (joins.size() > 0 || filters.size() > 0 || filtersMap.size() > 0 || andClauses.size() > 0) {
             query.append(" WHERE ");
-            containsItems = false;
         }
+
+        int whereItemSectionCount = 0;
 
         if (joins.size() > 0) {
-            addListItems(query, joins, " AND ");
+            whereItemSectionCount = addListItems(query, joins, " AND ", whereItemSectionCount);
         }
 
-        if (stdFilters.size() > 0) {
-            addListItems(query, stdFilters, " AND ");
+        if (filters.size() > 0) {
+            whereItemSectionCount = addListItems(query, filters, " AND ", whereItemSectionCount);
         }
 
-        Iterator<Entry<Integer, List<FilterItem>>> itr = filtersMap.entrySet().iterator();
-        while (itr.hasNext()) {
-            Entry<Integer, List<FilterItem>> e = itr.next();
+        if (whereItemSectionCount > 0 && !filtersMap.entrySet().isEmpty()) {
+            query.append(" AND ");
+        }
+        int filterGroupCount = 0;
+        for (Entry<Integer, List<FilterItem>> e : filtersMap.entrySet()) {
+            if (filterGroupCount > 0) {
+                query.append(" AND ");
+            }
 
             query.append("(");
-            addListItems(query, e.getValue(), " OR ");
+            addListItems(query, e.getValue(), " OR ", 0);
             query.append(")");
+            filterGroupCount++;
         }
 
         if (andClauses.size() > 0) {
-            addListItems(query, andClauses, " AND ");
+            addListItems(query, andClauses, " AND ", whereItemSectionCount);
         }
 
+        int groupBySectionCount = 0;
         // add groupbys
         if (groupBys.size() > 0 && !countOnly) {
             query.append(" GROUP BY ");
-            containsItems = false;
-            addListItems(query, groupBys);
+            addListItems(query, groupBys, groupBySectionCount);
         }
 
+        int orderBySectionCount = 0;
         // add orderbys
         if (orderBys.size() > 0 && !countOnly) {
             query.append(" ORDER BY ");
-            containsItems = false;
-            addListItems(query, orderBys);
+            addListItems(query, orderBys, orderBySectionCount);
         }
 
         postSelectClause = query.toString();
@@ -376,23 +403,24 @@ public class SQLQueryBuilder implements Cloneable {
         return buildQuery();
     }
 
-    private void addListItems(StringBuffer query, List list) {
-        addListItems(query, list, ", ");
+    private int addListItems(StringBuilder query, List list, int sectionItemCount) {
+        return addListItems(query, list, ", ", sectionItemCount);
     }
-    private boolean containsItems = false;
 
-    private void addListItems(StringBuffer query, List list, String seperator) {
-        for (int i = 0; i < list.size(); i++) {
-            if (containsItems) {
-                query.append(seperator);
+    private int addListItems(StringBuilder query, List list, String separator, int sectionItemCount) {
+        int newSectionCount = sectionItemCount;
+
+        for (Object aList : list) {
+            if (newSectionCount > 0) {
+                query.append(separator);
             }
 
-            query.append(list.get(i));
+            query.append(aList);
 
-            if (!containsItems) {
-                containsItems = true;
-            }
+            newSectionCount++;
         }
+
+        return newSectionCount;
     }
 
     private class Field {
@@ -424,10 +452,10 @@ public class SQLQueryBuilder implements Cloneable {
     private class FilterItem {
 
         private String field;
-        private String value;
+        private Object value;
         private QueryCompareType compare;
 
-        public FilterItem(String field, QueryCompareType compare, String value) {
+        public FilterItem(String field, QueryCompareType compare, Object value) {
             this.field = field;
             this.value = value;
             this.compare = compare;
@@ -435,13 +463,16 @@ public class SQLQueryBuilder implements Cloneable {
 
         @Override
         public String toString() {
-            String filter = "";
+            String filter;
 
-            String filterCompare = " = ";
+            String filterCompare;
             switch (compare) {
                 default:
                 case EQUAL:
                     filterCompare = " = ";
+                    break;
+                case NOT_EQUAL:
+                    filterCompare = " != ";
                     break;
                 case GREATERTHAN:
                     filterCompare = " > ";
@@ -455,6 +486,7 @@ public class SQLQueryBuilder implements Cloneable {
                 case LESSTHAN_EQUAL:
                     filterCompare = " <= ";
                     break;
+                case IN:
                 case LIKE:
                 case LIKE_IGNORECASE:
                     // handled later
@@ -462,13 +494,14 @@ public class SQLQueryBuilder implements Cloneable {
                     break;
             }
 
+
             if (compare == QueryCompareType.LIKE || compare == QueryCompareType.LIKE_IGNORECASE) {
                 switch (compare) {
                     case LIKE:
-                        filter = formatLikeClause(field, value);
+                        filter = formatLikeClause(field, String.valueOf(value));
                         break;
                     case LIKE_IGNORECASE:
-                        filter = formatIgnoreCaseLikeClause(field, value);
+                        filter = formatIgnoreCaseLikeClause(field, String.valueOf(value));
                         break;
                     default:
                         filter = field + " LIKE '%" + value + "%'";
@@ -477,7 +510,6 @@ public class SQLQueryBuilder implements Cloneable {
                 filter = field + " IN (" + value + ")";
             } else {
                 filter = field + filterCompare + value;
-
             }
 
             return filter;
@@ -492,27 +524,10 @@ public class SQLQueryBuilder implements Cloneable {
         return formatLikeClause(column, value);
     }
 
-    public static void main(String[] args) {
-        SQLQueryBuilder qm = new SQLQueryBuilder();
-        qm.addTable("Cars");
-        System.out.println("Query: " + qm.toString());
-
-        qm.addField("Name");
-        qm.addTable("Colors");
-        System.out.println("Query: " + qm.toString());
-
-        qm.addJoin("Color.ID", "Car.ID");
-        qm.addJoin("Color.ID2", "Car.ID2");
-        System.out.println("Query: " + qm.toString());
-
-        qm.addOrderBy("Color.Name");
-        System.out.println("Query: " + qm.toString());
-
-    }
-
-    /** Getter for property selectClause.
-     * @return Value of property selectClause.
+    /**
+     * Getter for property selectClause.
      *
+     * @return Value of property selectClause.
      */
     public java.lang.String getSelectClause() {
         if (selectClause.length() == 0) {
@@ -522,9 +537,10 @@ public class SQLQueryBuilder implements Cloneable {
         return selectClause;
     }
 
-    /** Getter for property postSelectClause.
-     * @return Value of property postSelectClause.
+    /**
+     * Getter for property postSelectClause.
      *
+     * @return Value of property postSelectClause.
      */
     public java.lang.String getPostSelectClause() {
         return postSelectClause;
@@ -538,42 +554,67 @@ public class SQLQueryBuilder implements Cloneable {
         this.entityManager = entityManager;
     }
 
-    public static String formatString(String str) {
+    public String formatString(String str) {
         return formatString(str, true);
     }
 
-    public static String formatString(String str, boolean wrap) {
+    public String formatString(String str, boolean wrap) {
         return QueryUtil.formatString(str, wrap);
     }
 
-    public static String formatDate(java.util.Date date) {
-        if (date == null || date.getTime() == 0) {
-            return "''";
-        }
-
-        return dateFormat.format(date);
+    public int formatBoolean(Boolean b) {
+        return b ? 1 : 0;
     }
 
-    public static String formatDateTime(java.util.Date date) {
-        if (date == null || date.getTime() == 0) {
-            return "''";
-        }
-
-        return dateTimeFormat.format(date);
+    public String getQueryParameter() {
+        return queryParameter;
     }
 
-    public static String formatTime(java.sql.Time time) {
-        if (time == null || time.getTime() == 0) {
-            return "''";
-        }
-
-        return timeFormat.format(time);
+    public void setQueryParameter(String queryParameter) {
+        this.queryParameter = queryParameter;
     }
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("''yyyy-MM-dd 00:00:00''");
-    private static SimpleDateFormat dateTimeFormat = new SimpleDateFormat("''yyyy-MM-dd HH:mm:ss''");
-    private static SimpleDateFormat timeFormat = new SimpleDateFormat("''HH:mm:ss''");
 
-    public static String formatBoolean(Boolean value) {
-        return value.booleanValue() ? "1" : "0";
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public void distinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    public List<Field> getFields() {
+        return fields;
+    }
+
+    public List<String> getTables() {
+        return tables;
+    }
+
+    public List<String> getTableJoins() {
+        return tableJoins;
+    }
+
+    public List<FilterItem> getJoins() {
+        return joins;
+    }
+
+    public List<FilterItem> getFilters() {
+        return filters;
+    }
+
+    public Map<Integer, List<FilterItem>> getFiltersMap() {
+        return filtersMap;
+    }
+
+    public List<String> getAndClauses() {
+        return andClauses;
+    }
+
+    public List<String> getGroupBys() {
+        return groupBys;
+    }
+
+    public List<String> getOrderBys() {
+        return orderBys;
     }
 }

@@ -12,6 +12,7 @@ nb-configuration.xml
 .mymetadata
 
 # IDEA
+.idea/
 *.ipr
 *.iml
 *.iws
