@@ -36,7 +36,7 @@ public class JPAQueryBuilderTest {
 
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();
-        qb1.addObject("Person");
+        qb1.object("Person");
         String query1 = qb1.toString();
         
         assertEquals("SELECT "+ defaultVar +" FROM Person "+ defaultVar, query1);
@@ -44,7 +44,7 @@ public class JPAQueryBuilderTest {
         
         // using user var
         JPAQueryBuilder qb2 = new JPAQueryBuilder();
-        qb2.addObject("Person", "a");
+        qb2.object("Person", "a");
         String query2 = qb2.toString();
         
         assertEquals("SELECT a FROM Person a", query2);
@@ -56,8 +56,8 @@ public class JPAQueryBuilderTest {
 
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();
-        qb1.addObject("Person");
-        qb1.addField(P_LAST_NAME);
+        qb1.object("Person");
+        qb1.field(P_LAST_NAME);
         String query1 = qb1.toString();
         
         assertEquals("SELECT "+ defaultVar +"."+ P_LAST_NAME +" FROM Person "+ defaultVar, query1);
@@ -65,8 +65,8 @@ public class JPAQueryBuilderTest {
         
         // using user var
         JPAQueryBuilder qb2 = new JPAQueryBuilder();
-        qb2.addObject("Person", "a");
-        qb2.addField("a", P_LAST_NAME);
+        qb2.object("Person", "a");
+        qb2.field("a", P_LAST_NAME);
         String query2 = qb2.toString();
         
         assertEquals("SELECT a."+ P_LAST_NAME +" FROM Person a", query2);
@@ -76,13 +76,13 @@ public class JPAQueryBuilderTest {
     public void testMultiObjQuery() {
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();
-        String p = qb1.addObject("Person");
-        String s = qb1.addObject("Status", "ID", p, "statusID");
-        String c = qb1.addObject("Category", "ID", p, "categoryID");
+        String p = qb1.object("Person");
+        String s = qb1.object("Status", "ID", p, "statusID");
+        String c = qb1.object("Category", "ID", p, "categoryID");
 
-        qb1.addFieldObject(p);
-        qb1.addField(s, "name");
-        qb1.addField(c, "name");
+        qb1.fieldObject(p);
+        qb1.field(s, "name");
+        qb1.field(c, "name");
 
         qb1.addFilter(p, "ID", 5);
 

@@ -2,6 +2,7 @@ package com.jdc.db.sql;
 
 import com.jdc.db.shared.query.QueryCompareType;
 import com.jdc.db.shared.query.QueryJoinType;
+import com.jdc.db.sql.query.SQLFilterItem;
 import com.jdc.db.sql.query.SQLQueryBuilder;
 import org.junit.*;
 
@@ -94,6 +95,18 @@ public class SQLQueryBuilderTest {
         sql.orderBy("Color.Name");
 
         assertEquals("SELECT Name FROM Car JOIN Colors ON Color.ID = Car.COLOR_ID ORDER BY Color.Name", sql.toString());
+    }
+
+    @Test
+    public void testJoinsWithAnd() {
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Car");
+        sql.join("Colors", new SQLFilterItem("Color.ID", "Car.COLOR_ID"), new SQLFilterItem("Color.COOL", "1"));
+        sql.join("Make", "Car.MAKE_ID", "Make.ID");
+        sql.field("Name");
+        sql.orderBy("Color.Name");
+
+        assertEquals("SELECT Name FROM Car JOIN Colors ON Color.ID = Car.COLOR_ID AND Color.COOL = 1 JOIN Make ON Car.MAKE_ID = Make.ID ORDER BY Color.Name", sql.toString());
     }
 
     @Test
