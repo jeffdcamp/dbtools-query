@@ -3,18 +3,18 @@
  * is a violation of applicable law. This material contains certain
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.sql.query;
+package org.dbtools.query.jpa;
 
-import com.jdc.db.shared.query.OracleUtil;
+import org.dbtools.query.shared.OracleUtil;
 
 /**
  *
  * @author jeff
  */
-public class OracleQueryBuilder extends SQLQueryBuilder {
+public class OracleQueryBuilder extends JPAQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {
-        return OracleUtil.formatIgnoreCaseLikeClause(column, value);
+        return OracleUtil.formatIgnoreCaseLikeClauseJPA(column, value);
     }
 }

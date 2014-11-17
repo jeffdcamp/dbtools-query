@@ -1,5 +1,5 @@
 /*
- * DerbyUtil.java
+ * FirebirdUtil.java
  *
  * Created on October 27, 2007
  *
@@ -7,15 +7,15 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.shared.query;
+package org.dbtools.query.shared;
 
 /**
  *
  * @author Jeff
  */
-public final class DerbyUtil {
+public final class FirebirdUtil {
 
-    private DerbyUtil() {
+    private FirebirdUtil() {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
@@ -29,21 +29,21 @@ public final class DerbyUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuilder select = new StringBuilder();
-        select.append("LOWER(").append(column).append(")");
-
-        if (before == after) { // default or two explicit stars
-            select.append(" LIKE LOWER('%");
+        StringBuilder select = new StringBuilder(column);
+        if (before == after) // default or two explicit stars
+        {
+            select.append(" containing '");
             select.append(QueryUtil.formatString(value, false));
-            select.append("%')");
+            select.append("'");
         } else if (before) {
-            select.append(" LIKE LOWER('%");
+            select.append(" containing '");
             select.append(QueryUtil.formatString(value, false));
-            select.append("')");
-        } else {// if endStar
-            select.append(" LIKE LOWER('");
+            select.append("'");
+        } else // if endStar
+        {
+            select.append(" containing '");
             select.append(QueryUtil.formatString(value, false));
-            select.append("%')");
+            select.append("'");
         }
         return select.toString();
     }

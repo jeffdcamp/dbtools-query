@@ -7,11 +7,11 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.jpa.query;
+package org.dbtools.query.jpa;
 
-import com.jdc.db.shared.query.QueryCompareType;
-import com.jdc.db.shared.query.QueryJoinType;
-import com.jdc.db.shared.query.QueryUtil;
+import org.dbtools.query.shared.QueryCompareType;
+import org.dbtools.query.shared.QueryJoinType;
+import org.dbtools.query.shared.QueryUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -367,32 +367,32 @@ public class JPAQueryBuilder<T> implements Cloneable {
         }
     }
 
-    public JPAQueryBuilder<T> addFilter(String varName, Object value) {
-        addFilter(getOnlyVarName(), varName, QueryCompareType.EQUAL, value);
+    public JPAQueryBuilder<T> filter(String varName, Object value) {
+        filter(getOnlyVarName(), varName, QueryCompareType.EQUAL, value);
         return this;
     }
 
-    public JPAQueryBuilder<T> addFilter(String objectVarName, String varName, Object value) {
-        addFilter(objectVarName, varName, QueryCompareType.EQUAL, value);
+    public JPAQueryBuilder<T> filter(String objectVarName, String varName, Object value) {
+        filter(objectVarName, varName, QueryCompareType.EQUAL, value);
         return this;
     }
 
-    public JPAQueryBuilder<T> addFilter(String varName, QueryCompareType compare, Object value) {
-        addFilterToGroup(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
+    public JPAQueryBuilder<T> filter(String varName, QueryCompareType compare, Object value) {
+        filterToGroup(getOnlyVarName(), varName, compare, value, NO_OR_GROUP);
         return this;
     }
 
-    public JPAQueryBuilder<T> addFilter(String objectVarName, String varName, QueryCompareType compare, Object value) {
-        addFilterToGroup(objectVarName, varName, compare, value, NO_OR_GROUP);
+    public JPAQueryBuilder<T> filter(String objectVarName, String varName, QueryCompareType compare, Object value) {
+        filterToGroup(objectVarName, varName, compare, value, NO_OR_GROUP);
         return this;
     }
 
-    public JPAQueryBuilder<T> addFilterToGroup(String varName, QueryCompareType compare, Object value, int orGroupKey) {
-        addFilterToGroup(getOnlyVarName(), varName, compare, value, orGroupKey);
+    public JPAQueryBuilder<T> filterToGroup(String varName, QueryCompareType compare, Object value, int orGroupKey) {
+        filterToGroup(getOnlyVarName(), varName, compare, value, orGroupKey);
         return this;
     }
 
-    public JPAQueryBuilder<T> addFilterToGroup(String objectVarName, String varName, QueryCompareType compare, Object value, int orGroupKey) {
+    public JPAQueryBuilder<T> filterToGroup(String objectVarName, String varName, QueryCompareType compare, Object value, int orGroupKey) {
         // get the filters for the given OR key
         List<JPAFilterItem> filters = getFilters(orGroupKey);
 
@@ -727,7 +727,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public List<T> findRecordsByValue(String className, String column, int value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         Query q = qb.executeQuery();
 
@@ -742,7 +742,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public List<T> findRecordsByValue(String className, String column, String value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         Query q = qb.executeQuery();
 
@@ -757,7 +757,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public List<T> findRecordsByValue(String className, String column, Date value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         Query q = qb.executeQuery();
 
@@ -784,7 +784,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public T findRecordByValue(String className, String column, int value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         return getSingleResultWOException(qb.executeQuery());
     }
@@ -792,7 +792,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public T findRecordByValue(String className, String column, String value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         return getSingleResultWOException(qb.executeQuery());
     }
@@ -800,7 +800,7 @@ public class JPAQueryBuilder<T> implements Cloneable {
     public T findRecordByValue(String className, String column, Date value) {
         JPAQueryBuilder qb = new JPAQueryBuilder(getEntityManager());
         qb.object(className);
-        qb.addFilter(column, value);
+        qb.filter(column, value);
 
         return getSingleResultWOException(qb.executeQuery());
     }

@@ -8,9 +8,9 @@
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
 
-package com.jdc.db.sql.query;
+package org.dbtools.query.sql;
 
-import com.jdc.db.shared.query.MysqlUtil;
+import org.dbtools.query.shared.MysqlUtil;
 
 /**
  *

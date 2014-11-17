@@ -1,28 +1,36 @@
-package com.jdc.db.sql.query;
+package org.dbtools.query.jpa;
 
-import com.jdc.db.shared.query.QueryCompareType;
+import org.dbtools.query.shared.QueryCompareType;
 
-public class SQLFilterItem {
-    private SQLQueryBuilder sqlQueryBuilder;
-
+public class JPAFilterItem<T> {
+    private JPAQueryBuilder<T> jpaQueryBuilder;
     private String field;
     private Object value;
     private QueryCompareType compare;
+    private Object paramValue;
+    private String paramName;
+    private boolean paramFilter = false;
 
-    public SQLFilterItem(String field, Object value) {
-        this.field = field;
-        this.value = value;
-        this.compare = QueryCompareType.EQUAL;
-    }
-
-    public SQLFilterItem(String field, QueryCompareType compare, Object value) {
+    public JPAFilterItem(String field, QueryCompareType compare, Object value) {
         this.field = field;
         this.value = value;
         this.compare = compare;
     }
 
-    public SQLFilterItem setSqlQueryBuilder(SQLQueryBuilder sqlQueryBuilder) {
-        this.sqlQueryBuilder = sqlQueryBuilder;
+    public boolean isParameterFilter() {
+        return paramFilter;
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
+
+    public Object getParamValue() {
+        return paramValue;
+    }
+
+    public JPAFilterItem<T> setJpaQueryBuilder(JPAQueryBuilder<T> jpaQueryBuilder) {
+        this.jpaQueryBuilder = jpaQueryBuilder;
         return this;
     }
 
@@ -61,12 +69,17 @@ public class SQLFilterItem {
 
 
         if (compare == QueryCompareType.LIKE || compare == QueryCompareType.LIKE_IGNORECASE) {
+            if (value instanceof String) {
+                // do nothing
+            } else {
+                throw new IllegalStateException("Cannot have a like clause on this filter type [String] for field [" + field + "]");
+            }
             switch (compare) {
                 case LIKE:
-                    filter = sqlQueryBuilder.formatLikeClause(field, String.valueOf(value));
+                    filter = jpaQueryBuilder.formatLikeClause(field, String.valueOf(value));
                     break;
                 case LIKE_IGNORECASE:
-                    filter = sqlQueryBuilder.formatIgnoreCaseLikeClause(field, String.valueOf(value));
+                    filter = jpaQueryBuilder.formatIgnoreCaseLikeClause(field, String.valueOf(value));
                     break;
                 default:
                     filter = field + " LIKE '%" + value + "%'";

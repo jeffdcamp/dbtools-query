@@ -6,18 +6,25 @@
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
 
-package com.jdc.db.jpa.query;
+package org.dbtools.query.jpa;
 
-import com.jdc.db.shared.query.PostgresqlUtil;
+import org.dbtools.query.shared.MysqlUtil;
 
 /**
  *
  * @author Jeff
  */
-public class PostgresqlQueryBuilder extends JPAQueryBuilder {
+public class MysqlQueryBuilder extends JPAQueryBuilder {
 
     @Override
-    public String formatIgnoreCaseLikeClause(String column, String value) {
-        return PostgresqlUtil.formatIgnoreCaseLikeClause(column, value);
+    public String formatLikeClause(String column, String value) {
+        return MysqlUtil.formatLikeClause(column, value);
     }
+    
+    @Override
+    public String formatIgnoreCaseLikeClause(String column, String value) {
+        return formatLikeClause(column, value);
+    }
+    
+    
 }

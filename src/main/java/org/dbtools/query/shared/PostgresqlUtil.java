@@ -1,5 +1,5 @@
 /*
- * FirebirdUtil.java
+ * PostgresqlUtil.java
  *
  * Created on October 27, 2007
  *
@@ -7,15 +7,15 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.shared.query;
+package org.dbtools.query.shared;
 
 /**
  *
  * @author Jeff
  */
-public final class FirebirdUtil {
+public final class PostgresqlUtil {
 
-    private FirebirdUtil() {
+    private PostgresqlUtil() {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
@@ -30,20 +30,18 @@ public final class FirebirdUtil {
             value = value.substring(0, value.length() - 1);
         }
         StringBuilder select = new StringBuilder(column);
-        if (before == after) // default or two explicit stars
-        {
-            select.append(" containing '");
+        if (before == after) { // default or two explicit stars
+            select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
-            select.append("'");
+            select.append("%'");
         } else if (before) {
-            select.append(" containing '");
+            select.append(" ilike '%");
             select.append(QueryUtil.formatString(value, false));
             select.append("'");
-        } else // if endStar
-        {
-            select.append(" containing '");
+        } else { // if endStar
+            select.append(" ilike '");
             select.append(QueryUtil.formatString(value, false));
-            select.append("'");
+            select.append("%'");
         }
         return select.toString();
     }

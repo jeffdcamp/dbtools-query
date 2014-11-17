@@ -7,7 +7,7 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.shared.query;
+package org.dbtools.query.shared;
 
 public enum QueryCompareType {
     EQUAL, NOT_EQUAL, LESSTHAN, GREATERTHAN, LESSTHAN_EQUAL, GREATERTHAN_EQUAL, LIKE, LIKE_IGNORECASE, IN

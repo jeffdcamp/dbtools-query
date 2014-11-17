@@ -1,4 +1,4 @@
-package com.jdc.db.shared.query;
+package org.dbtools.query.shared;
 
 public enum QueryJoinType {
     JOIN("JOIN"), LEFT_JOIN("LEFT JOIN"), RIGHT_JOIN("RIGHT_JOIN");

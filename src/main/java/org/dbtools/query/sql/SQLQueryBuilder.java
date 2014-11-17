@@ -7,11 +7,11 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.sql.query;
+package org.dbtools.query.sql;
 
-import com.jdc.db.shared.query.QueryCompareType;
-import com.jdc.db.shared.query.QueryJoinType;
-import com.jdc.db.shared.query.QueryUtil;
+import org.dbtools.query.shared.QueryCompareType;
+import org.dbtools.query.shared.QueryJoinType;
+import org.dbtools.query.shared.QueryUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -52,6 +52,10 @@ public class SQLQueryBuilder implements Cloneable {
         reset();
     }
 
+    public static SQLQueryBuilder build() {
+        return new SQLQueryBuilder();
+    }
+
     public void close() {
         if (entityManager != null && entityManager.isOpen()) {
             entityManager.close();
@@ -61,9 +65,7 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        super.clone();
-
+    public SQLQueryBuilder clone() {
         Class thisClass = this.getClass();
 
         SQLQueryBuilder clone;
@@ -181,7 +183,7 @@ public class SQLQueryBuilder implements Cloneable {
      *
      * @return columnID (or the order in which it was added... 0 based)
      */
-    public SQLQueryBuilder addField(String tablename, String fieldName, String alias) {
+    public SQLQueryBuilder field(String tablename, String fieldName, String alias) {
         fields.add(new Field(tablename + "." + fieldName, alias));
         return this;
     }
@@ -271,22 +273,22 @@ public class SQLQueryBuilder implements Cloneable {
         return filters;
     }
 
-    public SQLQueryBuilder addFilter(String field, Object value) {
-        addFilterToGroup(field, value, NO_OR_GROUP);
+    public SQLQueryBuilder filter(String field, Object value) {
+        filterToGroup(field, value, NO_OR_GROUP);
         return this;
     }
 
-    public SQLQueryBuilder addFilterToGroup(String field, Object value, int orGroupKey) {
-        addFilterToGroup(field, QueryCompareType.EQUAL, value, orGroupKey);
+    public SQLQueryBuilder filterToGroup(String field, Object value, int orGroupKey) {
+        filterToGroup(field, QueryCompareType.EQUAL, value, orGroupKey);
         return this;
     }
 
-    public SQLQueryBuilder addFilter(String field, QueryCompareType compare, Object value) {
-        addFilterToGroup(field, compare, value, NO_OR_GROUP);
+    public SQLQueryBuilder filter(String field, QueryCompareType compare, Object value) {
+        filterToGroup(field, compare, value, NO_OR_GROUP);
         return this;
     }
 
-    public SQLQueryBuilder addFilterToGroup(String field, QueryCompareType compare, Object value, int orGroupKey) {
+    public SQLQueryBuilder filterToGroup(String field, QueryCompareType compare, Object value, int orGroupKey) {
         // get the filters for the given OR key
         List<SQLFilterItem> filters = getFilters(orGroupKey);
 
@@ -488,7 +490,7 @@ public class SQLQueryBuilder implements Cloneable {
         return selectClause;
     }
 
-    public String[] toSelectionArgs(Object... args) {
+    public static String[] toSelectionArgs(Object... args) {
         int size = args.length;
         String[] selectionArgs = new String[size];
         for (int i = 0; i < size; i++) {

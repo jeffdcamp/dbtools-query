@@ -1,5 +1,6 @@
 package com.jdc.db.jpa.query;
 
+import org.dbtools.query.jpa.JPAQueryBuilder;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -84,7 +85,7 @@ public class JPAQueryBuilderTest {
         qb1.field(s, "name");
         qb1.field(c, "name");
 
-        qb1.addFilter(p, "ID", 5);
+        qb1.filter(p, "ID", 5);
 
         String query1 = qb1.toString();
 

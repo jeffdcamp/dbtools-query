@@ -5,9 +5,9 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.jpa.query;
+package org.dbtools.query.jpa;
 
-import com.jdc.db.shared.query.DerbyUtil;
+import org.dbtools.query.shared.DerbyUtil;
 
 /**
  *

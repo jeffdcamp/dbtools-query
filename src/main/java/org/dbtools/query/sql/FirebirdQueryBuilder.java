@@ -1,5 +1,5 @@
 /*
- * DerbyQueryBuilder.java
+ * FirebirdQueryBuilder.java
  *
  * Created on October 27, 2007
  *
@@ -7,18 +7,18 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.sql.query;
+package org.dbtools.query.sql;
 
-import com.jdc.db.shared.query.DerbyUtil;
+import org.dbtools.query.shared.FirebirdUtil;
 
 /**
  *
  * @author Jeff
  */
-public class DerbyQueryBuilder extends SQLQueryBuilder {
+public class FirebirdQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatIgnoreCaseLikeClause(String column, String value) {
-        return DerbyUtil.formatIgnoreCaseLikeClause(column, value);
+        return FirebirdUtil.formatIgnoreCaseLikeClause(column, value);
     }
 }

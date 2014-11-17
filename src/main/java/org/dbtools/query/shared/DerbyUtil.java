@@ -1,5 +1,5 @@
 /*
- * PostgresqlUtil.java
+ * DerbyUtil.java
  *
  * Created on October 27, 2007
  *
@@ -7,15 +7,15 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package com.jdc.db.shared.query;
+package org.dbtools.query.shared;
 
 /**
  *
  * @author Jeff
  */
-public final class PostgresqlUtil {
+public final class DerbyUtil {
 
-    private PostgresqlUtil() {
+    private DerbyUtil() {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
@@ -29,19 +29,21 @@ public final class PostgresqlUtil {
             after = true;
             value = value.substring(0, value.length() - 1);
         }
-        StringBuilder select = new StringBuilder(column);
+        StringBuilder select = new StringBuilder();
+        select.append("LOWER(").append(column).append(")");
+
         if (before == after) { // default or two explicit stars
-            select.append(" ilike '%");
+            select.append(" LIKE LOWER('%");
             select.append(QueryUtil.formatString(value, false));
-            select.append("%'");
+            select.append("%')");
         } else if (before) {
-            select.append(" ilike '%");
+            select.append(" LIKE LOWER('%");
             select.append(QueryUtil.formatString(value, false));
-            select.append("'");
-        } else { // if endStar
-            select.append(" ilike '");
+            select.append("')");
+        } else {// if endStar
+            select.append(" LIKE LOWER('");
             select.append(QueryUtil.formatString(value, false));
-            select.append("%'");
+            select.append("%')");
         }
         return select.toString();
     }
