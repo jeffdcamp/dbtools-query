@@ -387,6 +387,19 @@ public class JPAQueryBuilder<T> implements Cloneable {
         return this;
     }
 
+    public JPAQueryBuilder<T> filter(String field, QueryCompareType compare) {
+        switch (compare) {
+            case IS_NULL:
+            case NOT_NULL:
+                filterToGroup(field, compare, null, NO_OR_GROUP);
+                break;
+            default:
+                throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
+        }
+
+        return this;
+    }
+
     public JPAQueryBuilder<T> filterToGroup(String varName, QueryCompareType compare, Object value, int orGroupKey) {
         filterToGroup(getOnlyVarName(), varName, compare, value, orGroupKey);
         return this;

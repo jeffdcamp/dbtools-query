@@ -288,6 +288,19 @@ public class SQLQueryBuilder implements Cloneable {
         return this;
     }
 
+    public SQLQueryBuilder filter(String field, QueryCompareType compare) {
+        switch (compare) {
+            case IS_NULL:
+            case NOT_NULL:
+                filterToGroup(field, compare, null, NO_OR_GROUP);
+                break;
+            default:
+                throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
+        }
+
+        return this;
+    }
+
     public SQLQueryBuilder filterToGroup(String field, QueryCompareType compare, Object value, int orGroupKey) {
         // get the filters for the given OR key
         List<SQLFilterItem> filters = getFilters(orGroupKey);

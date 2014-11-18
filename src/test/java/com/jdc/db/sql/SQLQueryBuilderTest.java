@@ -211,4 +211,24 @@ public class SQLQueryBuilderTest {
         sql1.apply(sql2);
         assertEquals("SELECT * FROM Car WHERE Car.ID = ? AND Car.NAME = 'Ford' AND Car.WHEELS > 4 AND Car.IS_COOL = 1", sql1.toString());
     }
+
+    @Test
+    public void testIsNullQuery() {
+        // using default var
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Person");
+        sql.filter("id", QueryCompareType.IS_NULL);
+
+        assertEquals("SELECT * FROM Person WHERE id IS NULL", sql.toString().trim());
+    }
+
+    @Test
+    public void testNotNullQuery() {
+        // using default var
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Person");
+        sql.filter("id", QueryCompareType.NOT_NULL);
+
+        assertEquals("SELECT * FROM Person WHERE id NOT NULL", sql.toString().trim());
+    }
 }
