@@ -182,6 +182,12 @@ public class SQLQueryBuilderTest {
         sql4.orderBy("Name");
         sql4.orderBy("Color");
         assertEquals("SELECT * FROM Car WHERE WHEELS = 4 ORDER BY Name, Color", sql4.toString());
+
+        SQLQueryBuilder sql5 = new SQLQueryBuilder();
+        sql5.table("Car");
+        sql5.filter("WHEELS", 4);
+        sql5.orderBy("Name", "Color");
+        assertEquals("SELECT * FROM Car WHERE WHEELS = 4 ORDER BY Name, Color", sql5.toString());
     }
 
     @Test
@@ -214,7 +220,6 @@ public class SQLQueryBuilderTest {
 
     @Test
     public void testIsNullQuery() {
-        // using default var
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Person");
         sql.filter("id", QueryCompareType.IS_NULL);
@@ -224,11 +229,79 @@ public class SQLQueryBuilderTest {
 
     @Test
     public void testNotNullQuery() {
-        // using default var
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Person");
         sql.filter("id", QueryCompareType.NOT_NULL);
 
         assertEquals("SELECT * FROM Person WHERE id NOT NULL", sql.toString().trim());
     }
+
+    @Test
+    public void testSubSelectTableQuery() {
+        SQLQueryBuilder subSql = new SQLQueryBuilder();
+        subSql.field("id");
+        subSql.table("Person");
+
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table(subSql);
+
+        assertEquals("SELECT * FROM (SELECT id FROM Person)", sql.toString());
+    }
+
+    @Test
+    public void testSubSelectInQuery() {
+        SQLQueryBuilder subSql = new SQLQueryBuilder();
+        subSql.field("id");
+        subSql.table("Person");
+
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Family");
+        sql.filter("HeadPerson", QueryCompareType.IN, subSql);
+
+        assertEquals("SELECT * FROM Family WHERE HeadPerson IN (SELECT id FROM Person)", sql.toString());
+    }
+
+    @Test
+    public void testUnionQuery() {
+        SQLQueryBuilder sql1 = new SQLQueryBuilder();
+        sql1.field("id");
+        sql1.table("Person");
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.field("id");
+        sql2.table("Family");
+
+        assertEquals("(SELECT id FROM Person UNION SELECT id FROM Family)", SQLQueryBuilder.union(sql1, sql2));
+    }
+
+    @Test
+    public void testUnionAllQuery() {
+        SQLQueryBuilder sql1 = new SQLQueryBuilder();
+        sql1.field("id");
+        sql1.table("Person");
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.field("id");
+        sql2.table("Family");
+
+        assertEquals("(SELECT id FROM Person UNION ALL SELECT id FROM Family)", SQLQueryBuilder.unionAll(sql1, sql2));
+    }
+
+    @Test
+    public void testComplexUnionQuery() {
+        SQLQueryBuilder sql1 = new SQLQueryBuilder();
+        sql1.field("id");
+        sql1.table("Person");
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.field("id");
+        sql2.table("Family");
+
+        SQLQueryBuilder union = new SQLQueryBuilder();
+        union.table(SQLQueryBuilder.union(sql1, sql2));
+
+        assertEquals("SELECT * FROM (SELECT id FROM Person UNION SELECT id FROM Family)", union.toString());
+    }
+
+
 }

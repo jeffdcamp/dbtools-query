@@ -216,6 +216,11 @@ public class SQLQueryBuilder implements Cloneable {
         return this;
     }
 
+    public SQLQueryBuilder table(SQLQueryBuilder sql) {
+        tables.add("(" + sql.toString() + ")");
+        return this;
+    }
+
     public SQLQueryBuilder table(String tableName, String alias) {
         tables.add(tableName + " " + alias);
         return this;
@@ -330,6 +335,11 @@ public class SQLQueryBuilder implements Cloneable {
 
     public SQLQueryBuilder orderBy(String item) {
         orderBys.add(item);
+        return this;
+    }
+
+    public SQLQueryBuilder orderBy(String... items) {
+        Collections.addAll(orderBys, items);
         return this;
     }
 
@@ -511,6 +521,37 @@ public class SQLQueryBuilder implements Cloneable {
         }
 
         return selectionArgs;
+    }
+
+    public static String union(SQLQueryBuilder... sqlQueryBuilders) {
+        return union(false, sqlQueryBuilders);
+    }
+
+    public static String unionAll(SQLQueryBuilder... sqlQueryBuilders) {
+        return union(true, sqlQueryBuilders);
+    }
+
+    private static String union(boolean unionAll, SQLQueryBuilder... sqlQueryBuilders) {
+        if (sqlQueryBuilders == null) {
+            return "";
+        }
+
+        StringBuilder query = new StringBuilder();
+
+        query.append("(");
+        int count = 0;
+        for (SQLQueryBuilder sql : sqlQueryBuilders) {
+            if (count > 0) {
+                query.append(unionAll ? " UNION ALL " : " UNION ");
+            }
+
+            query.append(sql.toString());
+
+            count++;
+        }
+        query.append(")");
+
+        return query.toString();
     }
 
     /**
