@@ -10,8 +10,8 @@ Setup
             compile 'org.dbtools:dbtools-android:<latest version>'
         }
 
-Trouble with writing SQL
-========================
+Trouble with writing SQL in source code
+=======================================
 
   Writing SQL in Java can be painful because you spend a lot of time placing " and + between statements and variables (especially if you have your columns mapped to static variables).  Example:
 
