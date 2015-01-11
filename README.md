@@ -4,7 +4,7 @@ dbtools-query
 Setup
 =====
 
-  Add dbtools-query dependency to your "dependencies" section of the build.gradle file.  (latest version is found in Maven Central Repo)
+  Add dbtools-query dependency to your "dependencies" section of the build.gradle file.  (latest version is found in Maven Central Repo: http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22dbtools-query%22)
 
         dependencies {
             compile 'org.dbtools:dbtools-android:<latest version>'
