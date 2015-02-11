@@ -29,7 +29,7 @@ Trouble with writing SQL in source code
                             .table(MyTable.TABLE_NAME)
                             .toString();
 
-Useage
+Usage
 ======
 
   * Select ALL
@@ -72,8 +72,8 @@ Useage
         // "SELECT * FROM Car ORDER BY Name"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .orderBy("Name");
+                            .table("Car")
+                            .orderBy("Name")
                             .toString();
 
   * Group By
@@ -81,10 +81,10 @@ Useage
         // "SELECT Name, Color FROM Car GROUP BY Name"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .field("Name");
-                            .field("Color");
-                            .groupBy("Name");
+                            .table("Car")
+                            .field("Name")
+                            .field("Color")
+                            .groupBy("Name")
                             .toString();
 
   * Filter
@@ -93,11 +93,11 @@ Useage
         // AND Car.NAME = 'Ford' AND Car.WHEELS > 4 AND Car.IS_COOL = 1"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .filter("Car.ID", "?");
-                            .filter("Car.NAME", "Ford");
-                            .filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4);
-                            .filter("Car.IS_COOL", true);
+                            .table("Car")
+                            .filter("Car.ID", "?")
+                            .filter("Car.NAME", "Ford")
+                            .filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4)
+                            .filter("Car.IS_COOL", true)
                             .toString();
 
   * Filter Or
@@ -107,32 +107,32 @@ Useage
         // AND (Car.WHEELS > 4 OR Car.WHEELS <= 2)"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .filterToGroup("Car.ID", "?", 1);
-                            .filterToGroup("Car.NAME", "Ford", 1);
-                            .filterToGroup("Car.NAME", "Chevy", 1);
-                            .filterToGroup("Car.WHEELS", QueryCompareType.GREATERTHAN, 4, 2);
-                            .filterToGroup("Car.WHEELS", QueryCompareType.LESSTHAN_EQUAL, 2, 2);
-                            .filter("Car.IS_COOL", true);
+                            .table("Car")
+                            .filterToGroup("Car.ID", "?", 1)
+                            .filterToGroup("Car.NAME", "Ford", 1)
+                            .filterToGroup("Car.NAME", "Chevy", 1)
+                            .filterToGroup("Car.WHEELS", QueryCompareType.GREATERTHAN, 4, 2)
+                            .filterToGroup("Car.WHEELS", QueryCompareType.LESSTHAN_EQUAL, 2, 2)
+                            .filter("Car.IS_COOL", true)
                             .toString();
 
 
-  * Multi Table
+  * Multiple Tables
 
         // "SELECT Person.*, s.name AS stat_name, c.name AS cat_name
         // FROM Person p, Status s, Category c WHERE p.ID = 5"
 
         String query = new SQLQueryBuilder()
                             .distinct(true)
-                            .table("Person", "p");
-                            .table("Status", "s");
-                            .table("Category", "c");
+                            .table("Person", "p")
+                            .table("Status", "s")
+                            .table("Category", "c")
 
-                            field("Person.*");
-                            field("s.name", "stat_name");
-                            field("c.name", "cat_name");
+                            .field("Person.*")
+                            .field("s.name", "stat_name")
+                            .field("c.name", "cat_name")
 
-                            filter("p.ID", 5)
+                            .filter("p.ID", 5)
                             .toString();
 
   * Join
@@ -141,9 +141,9 @@ Useage
         // JOIN Colors ON Color.ID = Car.COLOR_ID ORDER BY Color.Name"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .join("Colors", "Color.ID", "Car.COLOR_ID");
-                            .field("Name");
+                            .table("Car")
+                            .join("Colors", "Color.ID", "Car.COLOR_ID")
+                            .field("Name")
                             .orderBy("Color.Name")
                             .toString();
 
@@ -156,11 +156,11 @@ Useage
         // WHERE Car.ID = 5 ORDER BY Color.Name"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .join("Color", "Color.ID", "Car.COLOR_ID");
-                            .join(QueryJoinType.LEFT_JOIN, "Owner", "Owner.ID", "Car.OWNER_ID");
-                            .field("Name");
-                            .filter("Car.ID", 5);
+                            .table("Car")
+                            .join("Color", "Color.ID", "Car.COLOR_ID")
+                            .join(QueryJoinType.LEFT_JOIN, "Owner", "Owner.ID", "Car.OWNER_ID")
+                            .field("Name")
+                            .filter("Car.ID", 5)
                             .orderBy("Color.Name")
                             .toString();
 
@@ -170,10 +170,10 @@ Useage
         // AND Color.COOL = 1 JOIN Make ON Car.MAKE_ID = Make.ID ORDER BY Color.Name"
 
         String query = new SQLQueryBuilder()
-                            .table("Car");
-                            .join("Colors", new SQLFilterItem("Color.ID", "Car.COLOR_ID"), new SQLFilterItem("Color.COOL", "1"));
-                            in("Make", "Car.MAKE_ID", "Make.ID");
-                            .field("Name");
+                            .table("Car")
+                            .join("Colors", new SQLFilterItem("Color.ID", "Car.COLOR_ID"), new SQLFilterItem("Color.COOL", "1"))
+                            .join("Make", "Car.MAKE_ID", "Make.ID")
+                            .field("Name")
                             .orderBy("Color.Name")
                             .toString();
 
@@ -201,7 +201,7 @@ Useage
         sql2.field("id");
         sql2.table("Family");
 
-        String query = SQLQueryBuilder.union(sql1, sql2)); // or use unionAll(...)
+        String query = SQLQueryBuilder.union(sql1, sql2); // or use unionAll(...)
 
   * Complex Union
 
@@ -231,7 +231,6 @@ Useage
         SQLQueryBuilder sql1 = new SQLQueryBuilder();
         sql1.table("Car");
         sql1.filter("Car.ID", "?");
-        assertEquals("SELECT * FROM Car WHERE Car.ID = ?", sql1.toString());
 
         // QUERY 2
         SQLQueryBuilder sql2 = new SQLQueryBuilder();
