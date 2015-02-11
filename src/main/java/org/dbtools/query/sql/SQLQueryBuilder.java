@@ -297,12 +297,18 @@ public class SQLQueryBuilder implements Cloneable {
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
+            case NONE:
                 filterToGroup(field, compare, null, NO_OR_GROUP);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
         }
 
+        return this;
+    }
+
+    public SQLQueryBuilder filter(String filter) {
+        filterToGroup(filter, QueryCompareType.NONE, null, NO_OR_GROUP);
         return this;
     }
 
@@ -314,6 +320,7 @@ public class SQLQueryBuilder implements Cloneable {
             case LIKE:
             case LIKE_IGNORECASE:
             case IN:
+            case NONE:
                 filters.add(new SQLFilterItem(field, compare, value).setSqlQueryBuilder(this));
                 break;
             default:

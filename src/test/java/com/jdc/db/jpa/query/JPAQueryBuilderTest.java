@@ -93,4 +93,16 @@ public class JPAQueryBuilderTest {
 
     }
 
+    @Test
+    public void testCompareTypeNoneFilter() {
+        JPAQueryBuilder qb1 = new JPAQueryBuilder();
+        qb1.object("Person", "a");
+
+        qb1.filter("a.lastName = \"Smith\"");
+
+        String query1 = qb1.toString();
+
+        assertEquals("SELECT a FROM Person a WHERE a.lastName = \"Smith\"", query1);
+    }
+
 }

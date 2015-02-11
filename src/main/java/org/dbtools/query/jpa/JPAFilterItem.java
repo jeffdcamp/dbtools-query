@@ -62,6 +62,7 @@ public class JPAFilterItem<T> {
             case IN:
             case LIKE:
             case LIKE_IGNORECASE:
+            case NONE:
                 // handled later
                 filterCompare = "";
                 break;
@@ -89,6 +90,9 @@ public class JPAFilterItem<T> {
                 break;
             case NOT_NULL:
                 filter = field + " NOT NULL ";
+                break;
+            case NONE:
+                filter = field;
                 break;
             default:
                 filter = field + filterCompare + value;
