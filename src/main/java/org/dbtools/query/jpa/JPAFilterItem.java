@@ -11,6 +11,12 @@ public class JPAFilterItem<T> {
     private String paramName;
     private boolean paramFilter = false;
 
+    public JPAFilterItem(String filter) {
+        this.field = filter;
+        this.value = null;
+        this.compare = QueryCompareType.NONE;
+    }
+
     public JPAFilterItem(String field, QueryCompareType compare, Object value) {
         this.field = field;
         this.value = value;

@@ -9,6 +9,12 @@ public class SQLFilterItem {
     private Object value;
     private QueryCompareType compare;
 
+    public SQLFilterItem(String filter) {
+        this.field = filter;
+        this.value = null;
+        this.compare = QueryCompareType.NONE;
+    }
+
     public SQLFilterItem(String field, Object value) {
         this.field = field;
         this.value = value;
