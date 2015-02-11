@@ -9,6 +9,12 @@ public class SQLFilterItem {
     private Object value;
     private QueryCompareType compare;
 
+    public SQLFilterItem(String filter) {
+        this.field = filter;
+        this.value = null;
+        this.compare = QueryCompareType.NONE;
+    }
+
     public SQLFilterItem(String field, Object value) {
         this.field = field;
         this.value = value;
@@ -54,6 +60,7 @@ public class SQLFilterItem {
             case IN:
             case LIKE:
             case LIKE_IGNORECASE:
+            case NONE:
                 // handled later
                 filterCompare = "";
                 break;
@@ -81,6 +88,9 @@ public class SQLFilterItem {
                 break;
             case NOT_NULL:
                 filter = field + " NOT NULL ";
+                break;
+            case NONE:
+                filter = field;
                 break;
             default:
                 filter = field + filterCompare + value;

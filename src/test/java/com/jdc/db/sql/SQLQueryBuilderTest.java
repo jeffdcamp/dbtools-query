@@ -145,6 +145,15 @@ public class SQLQueryBuilderTest {
     }
 
     @Test
+    public void testCompareTypeNoneFilter() {
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Car");
+        sql.filter("Car.ID = ? AND Car.NAME = 'FORD'");
+
+        assertEquals("SELECT * FROM Car WHERE Car.ID = ? AND Car.NAME = 'FORD'", sql.toString());
+    }
+
+    @Test
     public void testOr() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Car");

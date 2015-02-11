@@ -391,12 +391,18 @@ public class JPAQueryBuilder<T> implements Cloneable {
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
+            case NONE:
                 filterToGroup(field, compare, null, NO_OR_GROUP);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
         }
 
+        return this;
+    }
+
+    public JPAQueryBuilder<T> filter(String filter) {
+        filterToGroup(filter, QueryCompareType.NONE, null, NO_OR_GROUP);
         return this;
     }
 
@@ -414,6 +420,9 @@ public class JPAQueryBuilder<T> implements Cloneable {
             case LIKE_IGNORECASE:
             case IN:
                 filters.add(new JPAFilterItem<T>(objectVarName + "." + varName, compare, value).setJpaQueryBuilder(this));
+                break;
+            case NONE:
+                filters.add(new JPAFilterItem<T>(varName, compare, value).setJpaQueryBuilder(this));
                 break;
             default:
                 if (value instanceof String && !value.equals(queryParameter)) {
