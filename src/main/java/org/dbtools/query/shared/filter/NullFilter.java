@@ -10,7 +10,7 @@ public class NullFilter extends CompareFilter {
 
     public static NullFilter create(String field) {
         NullFilter filterFormatter = new NullFilter();
-        filterFormatter.filter = NullFilter.newInstance(field);
+        filterFormatter.filter = NullFilter.newInstance(field, true);
         return filterFormatter;
     }
 
@@ -20,15 +20,11 @@ public class NullFilter extends CompareFilter {
         return filterFormatter;
     }
 
-    private static NullFilter newInstance(String field) {
-        return new NullFilter(field, true);
-    }
-
     private static NullFilter newInstance(String field, boolean isNull) {
         return new NullFilter(field, isNull);
     }
 
-    private NullFilter() {
+    protected NullFilter() {
         super();
     }
 
@@ -69,7 +65,7 @@ public class NullFilter extends CompareFilter {
     }
 
     @Override
-    public NullFilter clone() throws CloneNotSupportedException {
+    public NullFilter clone() {
         NullFilter clone = (NullFilter) super.clone();
         clone.isNull = this.isNull;
         return clone;

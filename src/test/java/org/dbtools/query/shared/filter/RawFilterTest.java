@@ -35,4 +35,11 @@ public class RawFilterTest {
         assertEquals("((A = B AND C = D AND Y = Z) OR E = F) AND G = H AND I = J", rawFilterFormatter.buildFilter(new SQLQueryBuilder()));
     }
 
+    @Test
+    public void testClone() {
+        RawFilter filter = RawFilter.create("A");
+        RawFilter clone = filter.clone();
+        assertEquals(filter.buildFilter(new SQLQueryBuilder()), clone.buildFilter(new SQLQueryBuilder()));
+    }
+
 }

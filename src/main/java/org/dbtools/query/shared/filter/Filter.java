@@ -20,8 +20,11 @@ public abstract class Filter implements Cloneable {
     protected abstract String build(@Nonnull QueryBuilder queryBuilder);
 
     public Filter and(Filter... filters) {
+        if (filters.length < 1) {
+            throw new IllegalArgumentException("Must pass in at least one filter");
+        }
         if (filter instanceof AndFilter) {
-            ((AndFilter) filter).and(filters);
+            filter.and(filters);
         } else {
             filter = AndFilter.create(filter, filters);
         }
@@ -29,6 +32,9 @@ public abstract class Filter implements Cloneable {
     }
 
     public Filter or(Filter... filters) {
+        if (filters.length < 1) {
+            throw new IllegalArgumentException("Must pass in at least one filter");
+        }
         if (filter instanceof OrFilter) {
             ((OrFilter) filter).or(filters);
         } else {
@@ -42,9 +48,9 @@ public abstract class Filter implements Cloneable {
         return buildFilter(new SQLQueryBuilder());
     }
 
-    @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public Filter clone() throws CloneNotSupportedException {
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public Filter clone() {
         Class clazz = this.getClass();
         Filter clone;
         try {
@@ -53,7 +59,9 @@ public abstract class Filter implements Cloneable {
             throw new IllegalStateException("Could not clone Filter", e);
         }
 
-        clone.filter = this.filter.clone();
+        if (this.filter != null) {
+            clone.filter = this.filter.clone();
+        }
 
         return clone;
     }

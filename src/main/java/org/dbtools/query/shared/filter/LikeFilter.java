@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 
 public class LikeFilter extends CompareFilter {
 
-    private boolean ignoreCase;
+    protected boolean ignoreCase;
 
     public static LikeFilter create(String field, Object value) {
         LikeFilter filterFormatter = new LikeFilter();
@@ -29,11 +29,11 @@ public class LikeFilter extends CompareFilter {
         return new LikeFilter(field, value, ignoreCase);
     }
 
-    private LikeFilter() {
+    protected LikeFilter() {
         super();
     }
 
-    protected LikeFilter(String field, Object value, boolean ignoreCase) {
+    private LikeFilter(String field, Object value, boolean ignoreCase) {
         super(field, null, value);
         this.ignoreCase = ignoreCase;
     }
@@ -60,7 +60,7 @@ public class LikeFilter extends CompareFilter {
     }
 
     public LikeFilter or(String field, Object value) {
-        and(LikeFilter.create(field, value));
+        or(LikeFilter.create(field, value));
         return this;
     }
 
@@ -70,7 +70,7 @@ public class LikeFilter extends CompareFilter {
     }
 
     @Override
-    public LikeFilter clone() throws CloneNotSupportedException {
+    public LikeFilter clone() {
         LikeFilter clone = (LikeFilter) super.clone();
         clone.ignoreCase = this.ignoreCase;
         return clone;

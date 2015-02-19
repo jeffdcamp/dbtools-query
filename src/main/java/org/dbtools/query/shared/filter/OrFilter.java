@@ -7,19 +7,37 @@ import javax.annotation.Nonnull;
 public class OrFilter extends ConjunctionFilter {
 
     public static OrFilter create(Filter... filters) {
-        OrFilter orFilterFormatter = new OrFilter();
-        orFilterFormatter.or(filters);
-        return orFilterFormatter;
+        OrFilter orFilter = new OrFilter();
+        orFilter.filter = OrFilter.newInstance(filters);
+        return orFilter;
     }
 
     public static OrFilter create(Filter filter, Filter[] filters) {
-        OrFilter orFilterFormatter = new OrFilter();
-        orFilterFormatter.or(filter);
-        orFilterFormatter.or(filters);
-        return orFilterFormatter;
+        OrFilter orFilter = new OrFilter();
+        orFilter.filter = OrFilter.newInstance(filter, filters);
+        return orFilter;
     }
 
-    private OrFilter() {}
+    private static OrFilter newInstance(Filter... filters) {
+        if (filters.length < 1) {
+            throw new IllegalArgumentException("Must pass in at least one filter");
+        }
+        OrFilter orFilter = new OrFilter();
+        orFilter.or(filters);
+        return orFilter;
+    }
+
+    private static OrFilter newInstance(Filter filter, Filter[] filters) {
+        if (filter == null) {
+            throw new IllegalArgumentException("filter must not be null");
+        }
+        OrFilter orFilter = new OrFilter();
+        orFilter.or(filter);
+        orFilter.or(filters);
+        return orFilter;
+    }
+
+    protected OrFilter() {}
 
     @Override
     protected String build(@Nonnull QueryBuilder queryBuilder) {
@@ -30,12 +48,11 @@ public class OrFilter extends ConjunctionFilter {
                 builder.append(" OR ");
             }
             boolean wrap = filter instanceof ConjunctionFilter || filter.filter instanceof ConjunctionFilter;
-            if (wrap) {
-                builder.append('(');
-            }
-            builder.append(filter.buildFilter(queryBuilder));
-            if (wrap) {
-                builder.append(')');
+            String tmp = filter.buildFilter(queryBuilder);
+            if (wrap && tmp.length() >0) {
+                builder.append('(').append(tmp).append(')');
+            } else {
+                builder.append(tmp);
             }
             isFirst = false;
         }
@@ -43,16 +60,35 @@ public class OrFilter extends ConjunctionFilter {
     }
 
     @Override
+    public OrFilter and(Filter... filters) {
+        super.and(filters);
+        return this;
+    }
+
+    @Override
     public OrFilter or(Filter... filters) {
+        if (filters.length < 1) {
+            throw new IllegalArgumentException("Must pass in at least one filter");
+        }
+        if (filter != null) {
+            filter.or(filters);
+            return this;
+        }
+
         for (Filter filter : filters) { // Loop through filters and check for OrFilters
-            if (filter instanceof OrFilter) { // if OrFilter add ored filters (No Parens)
+            if (filter.filter != null) { // if has sub filter or that sub filter
+                this.or(filter.filter);
+            } else if (filter instanceof OrFilter) { // if OrFilter add ored filters (No Parens)
                 this.filters.addAll(((OrFilter) filter).filters);
-            } else if (filter.filter instanceof OrFilter) { // if the subfilter is OrFilter add its ored filters
-                this.filters.addAll(((OrFilter) filter.filter).filters);
             } else { // Else add the filter
                 this.filters.add(filter);
             }
         }
         return this;
+    }
+
+    @Override
+    public OrFilter clone() {
+        return (OrFilter) super.clone();
     }
 }

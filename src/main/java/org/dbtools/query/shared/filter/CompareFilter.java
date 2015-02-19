@@ -12,44 +12,61 @@ public class CompareFilter extends Filter {
     protected Object value;
 
     public static CompareFilter create(String field, Object value) {
-        CompareFilter filterFormatter = new CompareFilter();
-        filterFormatter.filter = CompareFilter.newInstance(field, value);
-        return filterFormatter;
+        CompareFilter filter = new CompareFilter();
+        filter.filter = CompareFilter.newInstance(field, CompareType.EQUAL, value);
+        return filter;
     }
 
     public static CompareFilter create(String field, CompareType compareType, Object value) {
-        CompareFilter filterFormatter = new CompareFilter();
-        filterFormatter.filter = CompareFilter.newInstance(field, compareType, value);
-        return filterFormatter;
+        CompareFilter filter = new CompareFilter();
+        filter.filter = CompareFilter.newInstance(field, compareType, value);
+        return filter;
+    }
+
+    public static CompareFilter create(String field, CompareType compareType) {
+        CompareFilter filter = new CompareFilter();
+        filter.filter = CompareFilter.newInstance(field, compareType);
+        return filter;
     }
 
     private static CompareFilter newInstance(String field, CompareType compareType, Object value) {
-        CompareFilter filterFormatter;
+        CompareFilter filter;
         switch (compareType) {
             case LIKE:
-                filterFormatter = LikeFilter.create(field, value, true);
+                filter = LikeFilter.create(field, value, false);
                 break;
             case LIKE_IGNORECASE:
-                filterFormatter = LikeFilter.create(field, value, true);
+                filter = LikeFilter.create(field, value, true);
                 break;
             case IN:
-                filterFormatter = InFilter.create(field, value);
+                filter = InFilter.create(field, true, value);
+                break;
+            case NOT_IN:
+                filter = InFilter.create(field, false, value);
                 break;
             case IS_NULL:
-                filterFormatter = NullFilter.create(field, true);
+                filter = NullFilter.create(field, true);
                 break;
             case NOT_NULL:
-                filterFormatter = NullFilter.create(field, false);
+                filter = NullFilter.create(field, false);
                 break;
             default:
-                filterFormatter = new CompareFilter(field, compareType, value);
-                break;
+                filter = new CompareFilter(field, compareType, value);
         }
-        return filterFormatter;
+        return filter;
     }
 
-    private static CompareFilter newInstance(String field, Object value) {
-        return new CompareFilter(field, CompareType.EQUAL, value);
+    private static CompareFilter newInstance(String field, CompareType compareType) {
+        CompareFilter filter;
+        switch (compareType) {
+            case IS_NULL:
+            case NOT_NULL:
+                filter = CompareFilter.newInstance(field, compareType, null);
+                break;
+            default:
+                throw new IllegalArgumentException("Illegal 1 argument compare " + compareType.toString());
+        }
+        return filter;
     }
 
     protected CompareFilter() {
@@ -84,14 +101,14 @@ public class CompareFilter extends Filter {
                 builder.append(" >= ");
                 break;
             default:
-                throw new IllegalArgumentException("Invalid QueryCompareType: " + compareType);
+                throw new IllegalStateException("Invalid QueryCompareType: " + compareType);
         }
         builder.append(queryBuilder.formatValue(value));
         return builder.toString();
     }
 
     public CompareFilter and(String field, Object value) {
-        and(CompareFilter.newInstance(field, value));
+        and(CompareFilter.newInstance(field, CompareType.EQUAL, value));
         return this;
     }
 
@@ -100,8 +117,13 @@ public class CompareFilter extends Filter {
         return this;
     }
 
+    public CompareFilter and(String field, CompareType compareType) {
+        and(CompareFilter.newInstance(field, compareType));
+        return this;
+    }
+
     public CompareFilter or(String field, Object value) {
-        or(CompareFilter.newInstance(field, value));
+        or(CompareFilter.newInstance(field, CompareType.EQUAL, value));
         return this;
     }
 
@@ -110,8 +132,14 @@ public class CompareFilter extends Filter {
         return this;
     }
 
+    public CompareFilter or(String field, CompareType compareType) {
+        or(CompareFilter.newInstance(field, compareType));
+        return this;
+    }
+
+
     @Override
-    public CompareFilter clone() throws CloneNotSupportedException {
+    public CompareFilter clone() {
         CompareFilter clone = (CompareFilter) super.clone();
         clone.field = this.field;
         clone.compareType = this.compareType;

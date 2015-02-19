@@ -17,7 +17,7 @@ public class RawFilter extends Filter {
         return new RawFilter(filterString);
     }
 
-    private RawFilter() {
+    protected RawFilter() {
     }
 
     private RawFilter(String filterString) {
@@ -40,7 +40,7 @@ public class RawFilter extends Filter {
     }
 
     @Override
-    public RawFilter clone() throws CloneNotSupportedException {
+    public RawFilter clone() {
         RawFilter clone = (RawFilter) super.clone();
         clone.filterString = this.filterString;
         return clone;

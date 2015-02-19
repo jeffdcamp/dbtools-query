@@ -330,6 +330,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         return this;
     }
 
+    @Override
     public String buildQuery() {
         return buildQuery(false);
     }

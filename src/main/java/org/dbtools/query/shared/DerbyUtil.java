@@ -19,6 +19,6 @@ public final class DerbyUtil {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
-        return "LOWER(" + column + ") LIKE LOWER('" + QueryUtil.formatString(value, false) + "')";
+        return "LOWER(" + column + ") LIKE LOWER(" + value + ")";
     }
 }

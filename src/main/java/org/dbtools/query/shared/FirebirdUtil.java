@@ -19,6 +19,6 @@ public final class FirebirdUtil {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
-        return column + " containing '" + QueryUtil.formatString(value, false) + "'";
+        return column + " containing " + value;
     }
 }

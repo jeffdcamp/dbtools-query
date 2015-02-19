@@ -7,7 +7,7 @@ public abstract class ConjunctionFilter extends Filter {
     protected final List<Filter> filters = new ArrayList<Filter>();
 
     @Override
-    public ConjunctionFilter clone() throws CloneNotSupportedException {
+    public ConjunctionFilter clone() {
         ConjunctionFilter clone = (ConjunctionFilter) super.clone();
         for(Filter filter : this.filters) {
             clone.filters.add(filter.clone());

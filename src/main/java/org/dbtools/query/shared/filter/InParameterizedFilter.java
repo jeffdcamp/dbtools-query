@@ -10,20 +10,26 @@ public class InParameterizedFilter extends InFilter {
 
     public static InParameterizedFilter create(String field, int numParams) {
         InParameterizedFilter filterFormatter = new InParameterizedFilter();
-        filterFormatter.filter = InParameterizedFilter.newInstance(field, numParams);
+        filterFormatter.filter = InParameterizedFilter.newInstance(field, true, numParams);
         return filterFormatter;
     }
 
-    private static InParameterizedFilter newInstance(String field, int numParams) {
-        return new InParameterizedFilter(field, numParams);
+    public static InParameterizedFilter create(String field, boolean in, int numParams) {
+        InParameterizedFilter filterFormatter = new InParameterizedFilter();
+        filterFormatter.filter = InParameterizedFilter.newInstance(field, in, numParams);
+        return filterFormatter;
     }
 
-    private InParameterizedFilter() {
+    private static InParameterizedFilter newInstance(String field, boolean in, int numParams) {
+        return new InParameterizedFilter(field, in, numParams);
+    }
+
+    protected InParameterizedFilter() {
         super();
     }
 
-    private InParameterizedFilter(String field, int numParams) {
-        super(field, numParams);
+    private InParameterizedFilter(String field, boolean in, int numParams) {
+        super(field, in, null);
         if (numParams < 1) {
             throw new IllegalArgumentException("There must be at least 1 param for an InParameterizedFilter.");
         }
@@ -33,7 +39,12 @@ public class InParameterizedFilter extends InFilter {
     @Override
     public String build(@Nonnull QueryBuilder queryBuilder) {
         StringBuilder builder = new StringBuilder(field);
-        builder.append(" IN (").append(queryBuilder.getQueryParameter());
+        if (in) {
+            builder.append(" IN ");
+        } else {
+            builder.append(" NOT IN ");
+        }
+        builder.append("(").append(queryBuilder.getQueryParameter());
         for (int i = 1; i < numParams; i++) {
             builder.append(", ").append(queryBuilder.getQueryParameter());
         }
@@ -42,17 +53,27 @@ public class InParameterizedFilter extends InFilter {
     }
 
     public InParameterizedFilter and(String field, int numParams) {
-        and(InParameterizedFilter.newInstance(field, numParams));
+        and(InParameterizedFilter.newInstance(field, true, numParams));
         return this;
     }
 
     public InParameterizedFilter or(String field, int numParams) {
-        or(InParameterizedFilter.newInstance(field, numParams));
+        or(InParameterizedFilter.newInstance(field, true, numParams));
+        return this;
+    }
+
+    public InParameterizedFilter and(String field, boolean in, int numParams) {
+        and(InParameterizedFilter.newInstance(field, in, numParams));
+        return this;
+    }
+
+    public InParameterizedFilter or(String field, boolean in, int numParams) {
+        or(InParameterizedFilter.newInstance(field, in, numParams));
         return this;
     }
 
     @Override
-    public InParameterizedFilter clone() throws CloneNotSupportedException {
+    public InParameterizedFilter clone() {
         InParameterizedFilter clone = (InParameterizedFilter) super.clone();
         clone.numParams = this.numParams;
         return clone;

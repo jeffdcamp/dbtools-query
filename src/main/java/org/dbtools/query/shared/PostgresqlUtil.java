@@ -19,6 +19,6 @@ public final class PostgresqlUtil {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
-        return column + " ilike '" + QueryUtil.formatString(value, false) + "'";
+        return column + " ilike " + value;
     }
 }

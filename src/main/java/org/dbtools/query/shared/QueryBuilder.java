@@ -8,4 +8,6 @@ public abstract class QueryBuilder {
     public abstract Object formatValue(Object value);
 
     public abstract String getQueryParameter();
+
+    public abstract String buildQuery();
 }

@@ -15,10 +15,10 @@ public final class OracleUtil {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
-        return "REGEXP_LIKE(" + column + ", '" + value + "', 'i')";
+        return "REGEXP_LIKE(" + column + ", " + value + ", 'i')";
     }
 
     public static String formatIgnoreCaseLikeClauseJPA(String column, String value) {
-        return "lower(" + column + ") LIKE '" + QueryUtil.formatString(value, false).toLowerCase() + "'";
+        return "lower(" + column + ") LIKE " + value.toLowerCase();
     }
 }
