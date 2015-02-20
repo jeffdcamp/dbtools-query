@@ -10,7 +10,7 @@
 
 package org.dbtools.query.sql;
 
-import org.dbtools.query.shared.MysqlUtil;
+import org.dbtools.query.shared.QueryUtil;
 
 /**
  *
@@ -20,7 +20,7 @@ public class MysqlQueryBuilder extends SQLQueryBuilder {
 
     @Override
     public String formatLikeClause(String column, String value) {
-        return MysqlUtil.formatLikeClause(column, value);
+        return QueryUtil.formatLikeClause(column, value);
     }
     
     @Override

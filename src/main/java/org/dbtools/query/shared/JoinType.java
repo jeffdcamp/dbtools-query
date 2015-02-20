@@ -1,11 +1,11 @@
 package org.dbtools.query.shared;
 
-public enum QueryJoinType {
+public enum JoinType {
     JOIN("JOIN"), LEFT_JOIN("LEFT JOIN"), RIGHT_JOIN("RIGHT_JOIN");
 
     private String joinText;
 
-    QueryJoinType(String joinText) {
+    JoinType(String joinText) {
         this.joinText = joinText;
     }
 

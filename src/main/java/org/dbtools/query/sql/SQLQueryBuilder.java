@@ -9,34 +9,35 @@
  */
 package org.dbtools.query.sql;
 
-import org.dbtools.query.shared.QueryCompareType;
-import org.dbtools.query.shared.QueryJoinType;
+import org.dbtools.query.shared.CompareType;
+import org.dbtools.query.shared.Join;
+import org.dbtools.query.shared.JoinType;
+import org.dbtools.query.shared.QueryBuilder;
 import org.dbtools.query.shared.QueryUtil;
+import org.dbtools.query.shared.filter.AndFilter;
+import org.dbtools.query.shared.filter.CompareFilter;
+import org.dbtools.query.shared.filter.Filter;
+import org.dbtools.query.shared.filter.RawFilter;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author jeff
  */
-public class SQLQueryBuilder implements Cloneable {
+public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
 
-    public static final int NO_OR_GROUP = -1;
     public static final String DEFAULT_QUERY_PARAMETER = "?";
 
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
-    private EntityManager entityManager = null;
     private Boolean distinct = null;
     private List<Field> fields;
     private List<String> tables;
-    private List<String> tableJoins;
-    private List<SQLFilterItem> joins;
-    private List<SQLFilterItem> filters; // just filters ANDed together
-    private Map<Integer, List<SQLFilterItem>> filtersMap;
-    private List<String> andClauses; //extra and clauses
+    private List<Join> joins;
+    private Filter filter;
     private List<String> groupBys;
     private List<String> orderBys;
     private String selectClause;
@@ -47,25 +48,13 @@ public class SQLQueryBuilder implements Cloneable {
         reset();
     }
 
-    public SQLQueryBuilder(EntityManager entityManager) {
-        this.setEntityManager(entityManager);
-        reset();
-    }
-
     public static SQLQueryBuilder build() {
         return new SQLQueryBuilder();
     }
 
-    public void close() {
-        if (entityManager != null && entityManager.isOpen()) {
-            entityManager.close();
-        }
-
-        entityManager = null; // NOPMD - Null is expected (forcing a new entity manager to be specified)
-    }
-
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public SQLQueryBuilder clone() {
+    public SQLQueryBuilder clone() throws CloneNotSupportedException{
         Class thisClass = this.getClass();
 
         SQLQueryBuilder clone;
@@ -75,27 +64,15 @@ public class SQLQueryBuilder implements Cloneable {
             throw new IllegalStateException("Could not clone QueryBuilder", e);
         }
 
-        if (entityManager != null) {
-            clone.setEntityManager(entityManager);
-        }
-
         // mutable.... create new objects!
         clone.distinct = this.distinct;
         clone.fields = new ArrayList<Field>(fields);
         clone.tables = new ArrayList<String>(tables);
 
-        clone.tableJoins = new ArrayList<String>(tableJoins);
-        clone.joins = new ArrayList<SQLFilterItem>(joins);
-        clone.filters = new ArrayList<SQLFilterItem>(filters);
+        clone.joins = new ArrayList<Join>(this.joins);
 
-        // filters Map
-        clone.filtersMap = new HashMap<Integer, List<SQLFilterItem>>();
-        for (Entry<Integer, List<SQLFilterItem>> e : filtersMap.entrySet()) {
-            List<SQLFilterItem> clonedFilters = new ArrayList<SQLFilterItem>(e.getValue());
-            clone.filtersMap.put(e.getKey(), clonedFilters);
-        }
+        clone.filter = this.filter.clone();
 
-        clone.andClauses = new ArrayList<String>(andClauses); //extra and clauses
         clone.groupBys = new ArrayList<String>(groupBys);
         clone.orderBys = new ArrayList<String>(orderBys);
 
@@ -110,11 +87,8 @@ public class SQLQueryBuilder implements Cloneable {
         distinct = false;
         fields = new ArrayList<Field>();
         tables = new ArrayList<String>();
-        tableJoins = new ArrayList<String>();
-        joins = new ArrayList<SQLFilterItem>();
-        filters = new ArrayList<SQLFilterItem>();
-        filtersMap = new HashMap<Integer, List<SQLFilterItem>>();
-        andClauses = new ArrayList<String>();
+        joins = new ArrayList<Join>();
+        filter = null;
         groupBys = new ArrayList<String>();
         orderBys = new ArrayList<String>();
 
@@ -126,40 +100,15 @@ public class SQLQueryBuilder implements Cloneable {
         distinct = distinct == null ? sqlQueryBuilder.distinct : distinct;
         fields.addAll(sqlQueryBuilder.getFields());
         tables.addAll(sqlQueryBuilder.getTables());
-        tableJoins.addAll(sqlQueryBuilder.getTableJoins());
         joins.addAll(sqlQueryBuilder.getJoins());
-        filters.addAll(sqlQueryBuilder.getFilters());
-        filtersMap.putAll(sqlQueryBuilder.getFiltersMap());
-        andClauses.addAll(sqlQueryBuilder.getAndClauses());
+        if (filter == null) {
+            filter = sqlQueryBuilder.filter;
+        } else {
+            filter.and(sqlQueryBuilder.filter);
+        }
         groupBys.addAll(sqlQueryBuilder.getGroupBys());
         orderBys.addAll(sqlQueryBuilder.getOrderBys());
         return this;
-    }
-
-    public Query executeQuery() {
-        if (entityManager != null) {
-            return entityManager.createNativeQuery(this.toString());
-        } else {
-            System.out.println("WARNING... executeQuery called with a null entityManager.");
-            return null;
-        }
-    }
-
-    public Query executeQuery(int firstRow, int numberOfRows) {
-        if (entityManager != null) {
-            Query q = entityManager.createNativeQuery(this.toString());
-
-            if (firstRow < 0) {
-                q.getResultList();
-            } else {
-                q.setMaxResults(numberOfRows).setFirstResult(firstRow).getResultList();
-            }
-
-            return q;
-        } else {
-            System.out.println("WARNING... executeQuery called with a null entityManager.");
-            return null;
-        }
     }
 
     /**
@@ -205,7 +154,7 @@ public class SQLQueryBuilder implements Cloneable {
                     field(fieldNameWithAlias[0], fieldNameWithAlias[1]);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unsupported number of strings for fieldNameWithAlias: [" + fieldNameWithAlias + "]");
+                    throw new IllegalArgumentException("Unsupported number of strings for fieldNameWithAlias: [" + Arrays.toString(fieldNameWithAlias) + "]");
             }
         }
         return this;
@@ -227,110 +176,69 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     public SQLQueryBuilder join(String field1, String field2) {
-        joins.add(new SQLFilterItem(field1, QueryCompareType.EQUAL, field2).setSqlQueryBuilder(this));
+        if (filter == null) {
+            filter = CompareFilter.create(field1, field2);
+        } else {
+            filter.and(CompareFilter.create(field1, field2));
+        }
         return this;
     }
 
     public SQLQueryBuilder join(String tableName, String field1, String field2) {
-        join(QueryJoinType.JOIN, tableName, field1, field2);
+        join(JoinType.JOIN, tableName, field1, field2);
         return this;
     }
 
-    public SQLQueryBuilder join(QueryJoinType joinType, String tableName, String field1, String field2) {
-        tableJoins.add(" " + joinType.getJoinText() + " " + tableName + " ON " + field1 + " = " + field2);
+    public SQLQueryBuilder join(JoinType joinType, String tableName, String field1, String field2) {
+        joins.add(new Join(joinType, tableName, CompareFilter.create(field1, field2)));
         return this;
     }
 
-    public SQLQueryBuilder join(String tableName, SQLFilterItem... filterItems) {
-        return join(QueryJoinType.JOIN, tableName, filterItems);
+    public SQLQueryBuilder join(String tableName, Filter... filters) {
+        return join(JoinType.JOIN, tableName, filters);
     }
 
-    public SQLQueryBuilder join(QueryJoinType joinType, String tableName, SQLFilterItem... filterItems) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(" ").append(joinType.getJoinText()).append(" ").append(tableName).append(" ON ");
+    public SQLQueryBuilder join(JoinType joinType, String tableName, Filter... filters) {
+        return join(new Join(joinType, tableName, AndFilter.create(filters)));
+    }
 
-        int count = 0;
-        for (SQLFilterItem item : filterItems) {
-            if (count > 0) {
-                sb.append(" AND ");
-            }
-            sb.append(item);
-            count++;
-        }
-
-        tableJoins.add(sb.toString());
+    public SQLQueryBuilder join(Join... joins) {
+        this.joins.addAll(Arrays.asList(joins));
         return this;
-    }
-
-    private List<SQLFilterItem> getFilters(int orGroupKey) {
-        // get the filters for the given OR key
-        List<SQLFilterItem> filters;
-        if (orGroupKey == NO_OR_GROUP) {
-            filters = this.filters;
-        } else {
-            filters = filtersMap.get(orGroupKey);
-            if (filters == null) {
-                filters = new ArrayList<SQLFilterItem>();
-                filtersMap.put(orGroupKey, filters);
-            }
-        }
-
-        return filters;
     }
 
     public SQLQueryBuilder filter(String field, Object value) {
-        filterToGroup(field, value, NO_OR_GROUP);
+        filter(CompareFilter.create(field, value));
         return this;
     }
 
-    public SQLQueryBuilder filterToGroup(String field, Object value, int orGroupKey) {
-        filterToGroup(field, QueryCompareType.EQUAL, value, orGroupKey);
+    public SQLQueryBuilder filter(String field, CompareType compare, Object value) {
+        filter(CompareFilter.create(field, compare, value));
         return this;
     }
 
-    public SQLQueryBuilder filter(String field, QueryCompareType compare, Object value) {
-        filterToGroup(field, compare, value, NO_OR_GROUP);
-        return this;
-    }
-
-    public SQLQueryBuilder filter(String field, QueryCompareType compare) {
+    public SQLQueryBuilder filter(String field, CompareType compare) {
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
-            case NONE:
-                filterToGroup(field, compare, null, NO_OR_GROUP);
+                filter(CompareFilter.create(field, compare, null));
                 break;
             default:
                 throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
         }
-
         return this;
     }
 
     public SQLQueryBuilder filter(String filter) {
-        filterToGroup(filter, QueryCompareType.NONE, null, NO_OR_GROUP);
+        filter(RawFilter.create(filter));
         return this;
     }
 
-    public SQLQueryBuilder filterToGroup(String field, QueryCompareType compare, Object value, int orGroupKey) {
-        // get the filters for the given OR key
-        List<SQLFilterItem> filters = getFilters(orGroupKey);
-
-        switch (compare) {
-            case LIKE:
-            case LIKE_IGNORECASE:
-            case IN:
-            case NONE:
-                filters.add(new SQLFilterItem(field, compare, value).setSqlQueryBuilder(this));
-                break;
-            default:
-                if (value instanceof String && !value.equals(queryParameter)) {
-                    filters.add(new SQLFilterItem(field, compare, formatString((String) value)).setSqlQueryBuilder(this));
-                } else if (value instanceof Boolean) {
-                    filters.add(new SQLFilterItem(field, compare, formatBoolean((Boolean) value)).setSqlQueryBuilder(this));
-                } else {
-                    filters.add(new SQLFilterItem(field, compare, value).setSqlQueryBuilder(this));
-                }
+    public SQLQueryBuilder filter(Filter filter) {
+        if (this.filter == null) {
+            this.filter = filter;
+        } else {
+            this.filter.and(filter);
         }
         return this;
     }
@@ -356,11 +264,7 @@ public class SQLQueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder andCalause(String c) {
-        andClauses.add(c);
-        return this;
-    }
-
+    @Override
     public String buildQuery() {
         return buildQuery(false);
     }
@@ -393,40 +297,13 @@ public class SQLQueryBuilder implements Cloneable {
         query = new StringBuilder();
         query.append(" FROM ");
         addListItems(query, tables, 0);
-        addListItems(query, tableJoins, "", 0);
 
-        // add filters
-        if (joins.size() > 0 || filters.size() > 0 || filtersMap.size() > 0 || andClauses.size() > 0) {
-            query.append(" WHERE ");
+        for(Join join : joins) {
+            query.append(" ").append(join.buildJoin(this));
         }
 
-        int whereItemSectionCount = 0;
-
-        if (joins.size() > 0) {
-            whereItemSectionCount = addListItems(query, joins, " AND ", whereItemSectionCount);
-        }
-
-        if (filters.size() > 0) {
-            whereItemSectionCount = addListItems(query, filters, " AND ", whereItemSectionCount);
-        }
-
-        if (whereItemSectionCount > 0 && !filtersMap.entrySet().isEmpty()) {
-            query.append(" AND ");
-        }
-        int filterGroupCount = 0;
-        for (Entry<Integer, List<SQLFilterItem>> e : filtersMap.entrySet()) {
-            if (filterGroupCount > 0) {
-                query.append(" AND ");
-            }
-
-            query.append("(");
-            addListItems(query, e.getValue(), " OR ", 0);
-            query.append(")");
-            filterGroupCount++;
-        }
-
-        if (andClauses.size() > 0) {
-            addListItems(query, andClauses, " AND ", whereItemSectionCount);
+        if (filter != null) {
+            query.append(" WHERE ").append(filter.buildFilter(this));
         }
 
         int groupBySectionCount = 0;
@@ -521,13 +398,17 @@ public class SQLQueryBuilder implements Cloneable {
     }
 
     public static String[] toSelectionArgs(Object... args) {
-        int size = args.length;
-        String[] selectionArgs = new String[size];
-        for (int i = 0; i < size; i++) {
-            selectionArgs[i] = String.valueOf(args[i]);
+        List<String> selectionArgs = new ArrayList<String>(args.length);
+        for (Object o : args) {
+            if (o instanceof List) {
+                for (Object p : (List) o) {
+                    selectionArgs.add(String.valueOf(p));
+                }
+            } else {
+                selectionArgs.add(String.valueOf(o));
+            }
         }
-
-        return selectionArgs;
+        return selectionArgs.toArray(new String[selectionArgs.size()]);
     }
 
     public static String union(SQLQueryBuilder... sqlQueryBuilders) {
@@ -570,20 +451,12 @@ public class SQLQueryBuilder implements Cloneable {
         return postSelectClause;
     }
 
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public String formatString(String str) {
-        return formatString(str, true);
-    }
-
-    public String formatString(String str, boolean wrap) {
-        return QueryUtil.formatString(str, wrap);
+    @Override
+    public Object formatValue(Object value) {
+        if (value instanceof Boolean) {
+            return formatBoolean((Boolean) value);
+        }
+        return value;
     }
 
     public int formatBoolean(Boolean b) {
@@ -614,24 +487,12 @@ public class SQLQueryBuilder implements Cloneable {
         return tables;
     }
 
-    public List<String> getTableJoins() {
-        return tableJoins;
-    }
-
-    public List<SQLFilterItem> getJoins() {
+    public List<Join> getJoins() {
         return joins;
     }
 
-    public List<SQLFilterItem> getFilters() {
-        return filters;
-    }
-
-    public Map<Integer, List<SQLFilterItem>> getFiltersMap() {
-        return filtersMap;
-    }
-
-    public List<String> getAndClauses() {
-        return andClauses;
+    public Filter getFilter() {
+        return filter;
     }
 
     public List<String> getGroupBys() {

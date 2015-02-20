@@ -1,10 +1,14 @@
 package com.jdc.db.sql;
 
-import org.dbtools.query.shared.QueryCompareType;
-import org.dbtools.query.shared.QueryJoinType;
-import org.dbtools.query.sql.SQLFilterItem;
+import org.dbtools.query.shared.CompareType;
+import org.dbtools.query.shared.JoinType;
+import org.dbtools.query.shared.filter.CompareFilter;
 import org.dbtools.query.sql.SQLQueryBuilder;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -101,7 +105,7 @@ public class SQLQueryBuilderTest {
     public void testJoinsWithAnd() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Car");
-        sql.join("Colors", new SQLFilterItem("Color.ID", "Car.COLOR_ID"), new SQLFilterItem("Color.COOL", "1"));
+        sql.join("Colors", CompareFilter.create("Color.ID", "Car.COLOR_ID"), CompareFilter.create("Color.COOL", "1"));
         sql.join("Make", "Car.MAKE_ID", "Make.ID");
         sql.field("Name");
         sql.orderBy("Color.Name");
@@ -114,7 +118,7 @@ public class SQLQueryBuilderTest {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Car");
         sql.join("Color", "Color.ID", "Car.COLOR_ID");
-        sql.join(QueryJoinType.LEFT_JOIN, "Owner", "Owner.ID", "Car.OWNER_ID");
+        sql.join(JoinType.LEFT_JOIN, "Owner", "Owner.ID", "Car.OWNER_ID");
         sql.field("Name");
         sql.filter("Car.ID", 5);
 
@@ -137,8 +141,8 @@ public class SQLQueryBuilderTest {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Car");
         sql.filter("Car.ID", "?");
-        sql.filter("Car.NAME", "Ford");
-        sql.filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4);
+        sql.filter("Car.NAME", "'Ford'");
+        sql.filter("Car.WHEELS", CompareType.GREATERTHAN, 4);
         sql.filter("Car.IS_COOL", true);
 
         assertEquals("SELECT * FROM Car WHERE Car.ID = ? AND Car.NAME = 'Ford' AND Car.WHEELS > 4 AND Car.IS_COOL = 1", sql.toString());
@@ -157,12 +161,9 @@ public class SQLQueryBuilderTest {
     public void testOr() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Car");
-        sql.filterToGroup("Car.ID", "?", 1);
-        sql.filterToGroup("Car.NAME", "Ford", 1);
-        sql.filterToGroup("Car.NAME", "Chevy", 1);
-        sql.filterToGroup("Car.WHEELS", QueryCompareType.GREATERTHAN, 4, 2);
-        sql.filterToGroup("Car.WHEELS", QueryCompareType.LESSTHAN_EQUAL, 2, 2);
         sql.filter("Car.IS_COOL", true);
+        sql.filter(CompareFilter.create("Car.ID", "?").or("Car.NAME", "'Ford'").or("Car.NAME", "'Chevy'"));
+        sql.filter(CompareFilter.create("Car.WHEELS", CompareType.GREATERTHAN, 4).or("Car.WHEELS", CompareType.LESSTHAN_EQUAL, 2));
 
         assertEquals("SELECT * FROM Car WHERE Car.IS_COOL = 1 AND (Car.ID = ? OR Car.NAME = 'Ford' OR Car.NAME = 'Chevy') AND (Car.WHEELS > 4 OR Car.WHEELS <= 2)", sql.toString());
     }
@@ -219,8 +220,8 @@ public class SQLQueryBuilderTest {
 
         // QUERY 2
         SQLQueryBuilder sql2 = new SQLQueryBuilder();
-        sql2.filter("Car.NAME", "Ford");
-        sql2.filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4);
+        sql2.filter("Car.NAME", "'Ford'");
+        sql2.filter("Car.WHEELS", CompareType.GREATERTHAN, 4);
         sql2.filter("Car.IS_COOL", true);
 
         sql1.apply(sql2);
@@ -231,7 +232,7 @@ public class SQLQueryBuilderTest {
     public void testIsNullQuery() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Person");
-        sql.filter("id", QueryCompareType.IS_NULL);
+        sql.filter("id", CompareType.IS_NULL);
 
         assertEquals("SELECT * FROM Person WHERE id IS NULL", sql.toString().trim());
     }
@@ -240,7 +241,7 @@ public class SQLQueryBuilderTest {
     public void testNotNullQuery() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Person");
-        sql.filter("id", QueryCompareType.NOT_NULL);
+        sql.filter("id", CompareType.NOT_NULL);
 
         assertEquals("SELECT * FROM Person WHERE id NOT NULL", sql.toString().trim());
     }
@@ -265,7 +266,7 @@ public class SQLQueryBuilderTest {
 
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Family");
-        sql.filter("HeadPerson", QueryCompareType.IN, subSql);
+        sql.filter("HeadPerson", CompareType.IN, subSql);
 
         assertEquals("SELECT * FROM Family WHERE HeadPerson IN (SELECT id FROM Person)", sql.toString());
     }
