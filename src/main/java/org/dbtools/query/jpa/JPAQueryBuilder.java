@@ -51,9 +51,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        super.clone();
-
+    public Object clone() {
         Class thisClass = this.getClass();
 
         JPAQueryBuilder clone;

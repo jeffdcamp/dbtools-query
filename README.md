@@ -96,7 +96,7 @@ Usage
                             .table("Car")
                             .filter("Car.ID", "?")
                             .filter("Car.NAME", "Ford")
-                            .filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4)
+                            .filter("Car.WHEELS", CompareType.GREATERTHAN, 4)
                             .filter("Car.IS_COOL", true)
                             .buildQuery();
 
@@ -184,7 +184,7 @@ Usage
 
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Family");
-        sql.filter("HeadPerson", QueryCompareType.IN, subSql);
+        sql.filter("HeadPerson", CompareType.IN, subSql);
 
   * Union
 
@@ -232,7 +232,7 @@ Usage
         // QUERY 2
         SQLQueryBuilder sql2 = new SQLQueryBuilder();
         sql2.filter("Car.NAME", "Ford");
-        sql2.filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4);
+        sql2.filter("Car.WHEELS", CompareType.GREATERTHAN, 4);
         sql2.filter("Car.IS_COOL", true);
 
         sql1.apply(sql2);

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * @author jeff
  */
 public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
@@ -52,9 +51,8 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return new SQLQueryBuilder();
     }
 
-    @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public SQLQueryBuilder clone() throws CloneNotSupportedException{
+    public SQLQueryBuilder clone() {
         Class thisClass = this.getClass();
 
         SQLQueryBuilder clone;
@@ -298,7 +296,7 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         query.append(" FROM ");
         addListItems(query, tables, 0);
 
-        for(Join join : joins) {
+        for (Join join : joins) {
             query.append(" ").append(join.buildJoin(this));
         }
 
