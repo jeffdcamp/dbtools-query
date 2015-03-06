@@ -102,7 +102,9 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         if (filter == null) {
             filter = sqlQueryBuilder.filter;
         } else {
-            filter.and(sqlQueryBuilder.filter);
+            if (sqlQueryBuilder.filter != null) {
+                filter.and(sqlQueryBuilder.filter);
+            }
         }
         groupBys.addAll(sqlQueryBuilder.getGroupBys());
         orderBys.addAll(sqlQueryBuilder.getOrderBys());
