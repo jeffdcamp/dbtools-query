@@ -364,4 +364,37 @@ public class SQLQueryBuilderTest {
         assertEquals("SELECT * FROM (SELECT id FROM Person UNION SELECT id FROM Family)", union.buildQuery());
     }
 
+    @Test
+    public void testCloneBasicQuery() {
+        // using default var
+        SQLQueryBuilder qb1 = new SQLQueryBuilder();
+        qb1.table("Person");
+        String query1 = qb1.buildQuery();
+
+        assertEquals("SELECT * FROM Person", query1);
+
+        assertEquals("SELECT * FROM Person", qb1.clone().buildQuery());
+    }
+
+    @Test
+    public void testCloneBasicFieldQuery() {
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Person");
+        sql.field("LastName");
+        String query1 = sql.buildQuery();
+        assertEquals("SELECT LastName FROM Person", query1);
+
+        // clone
+        assertEquals("SELECT LastName FROM Person", sql.clone().buildQuery());
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.table("Person");
+        sql2.fields("LastName", "FirstName", "Age");
+        assertEquals("SELECT LastName, FirstName, Age FROM Person", sql2.buildQuery());
+
+        // clone
+        assertEquals("SELECT LastName, FirstName, Age FROM Person", sql2.clone().buildQuery());
+
+    }
+
 }

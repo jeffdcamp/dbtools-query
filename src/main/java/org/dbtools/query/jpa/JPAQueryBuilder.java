@@ -67,9 +67,11 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         clone.objects = new ArrayList<String>(objects);
         clone.varNames = new ArrayList<String>(varNames);
 
-        clone.joins = new ArrayList(this.joins);
+        clone.joins = new ArrayList<Join>(this.joins);
 
-        clone.filter = this.filter.clone();
+        if (this.filter != null) {
+            clone.filter = this.filter.clone();
+        }
 
         clone.groupBys = new ArrayList<String>(groupBys);
         clone.orderBys = new ArrayList<String>(orderBys);

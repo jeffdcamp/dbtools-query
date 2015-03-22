@@ -69,7 +69,9 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
 
         clone.joins = new ArrayList<Join>(this.joins);
 
-        clone.filter = this.filter.clone();
+        if (this.filter != null) {
+            clone.filter = this.filter.clone();
+        }
 
         clone.groupBys = new ArrayList<String>(groupBys);
         clone.orderBys = new ArrayList<String>(orderBys);
