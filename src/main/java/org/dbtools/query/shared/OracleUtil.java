@@ -15,34 +15,10 @@ public final class OracleUtil {
     }
 
     public static String formatIgnoreCaseLikeClause(String column, String value) {
-        return "REGEXP_LIKE(" + column + ", '" + value + "', 'i')";
+        return "REGEXP_LIKE(" + column + ", " + value + ", 'i')";
     }
 
     public static String formatIgnoreCaseLikeClauseJPA(String column, String value) {
-        boolean before = false;
-        if (value.indexOf('*') == 0) {
-            before = true;
-            value = value.substring(1);
-        }
-        boolean after = false;
-        if (value.lastIndexOf('*') == (value.length() - 1)) {
-            after = true;
-            value = value.substring(0, value.length() - 1);
-        }
-        StringBuilder select = new StringBuilder("lower(" + column + ")");
-        if (before == after) { // default or two explicit stars
-            select.append(" LIKE '%");
-            select.append(QueryUtil.formatString(value, false).toLowerCase());
-            select.append("%'");
-        } else if (before) {
-            select.append(" LIKE '%");
-            select.append(QueryUtil.formatString(value, false).toLowerCase());
-            select.append("'");
-        } else { // if endStar
-            select.append(" LIKE '");
-            select.append(QueryUtil.formatString(value, false).toLowerCase());
-            select.append("%'");
-        }
-        return select.toString();
+        return "lower(" + column + ") LIKE " + value.toLowerCase();
     }
 }

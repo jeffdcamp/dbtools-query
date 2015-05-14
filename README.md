@@ -27,7 +27,7 @@ Trouble with writing SQL in source code
                             .field(MyTable.C_PHONE)
                             .field(MyTable.C_ADDRESS)
                             .table(MyTable.TABLE_NAME)
-                            .toString();
+                            .buildQuery();
 
 Usage
 ======
@@ -38,7 +38,7 @@ Usage
 
         String query = new SQLQueryBuilder()
                             .table("Person")
-                            .toString();
+                            .buildQuery();
 
   * Fields
 
@@ -48,14 +48,14 @@ Usage
                             .field("LastName")
                             .field("FirstName")
                             .table("Person")
-                            .toString();
+                            .buildQuery();
 
         // "SELECT LastName, FirstName, Age FROM Person"
 
         String query = new SQLQueryBuilder()
                             .fields("LastName", "FirstName", "Age")
                             .table("Person")
-                            .toString();
+                            .buildQuery();
 
   * Distinct
 
@@ -65,7 +65,7 @@ Usage
                             .distinct(true)
                             .field("LastName")
                             .table("Person")
-                            .toString();
+                            .buildQuery();
 
   * Order By
 
@@ -74,7 +74,7 @@ Usage
         String query = new SQLQueryBuilder()
                             .table("Car")
                             .orderBy("Name")
-                            .toString();
+                            .buildQuery();
 
   * Group By
 
@@ -85,7 +85,7 @@ Usage
                             .field("Name")
                             .field("Color")
                             .groupBy("Name")
-                            .toString();
+                            .buildQuery();
 
   * Filter
 
@@ -96,9 +96,9 @@ Usage
                             .table("Car")
                             .filter("Car.ID", "?")
                             .filter("Car.NAME", "Ford")
-                            .filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4)
+                            .filter("Car.WHEELS", CompareType.GREATERTHAN, 4)
                             .filter("Car.IS_COOL", true)
-                            .toString();
+                            .buildQuery();
 
   * Filter Or
 
@@ -106,15 +106,12 @@ Usage
         // AND (Car.ID = ? OR Car.NAME = 'Ford' OR Car.NAME = 'Chevy')
         // AND (Car.WHEELS > 4 OR Car.WHEELS <= 2)"
 
-        String query = new SQLQueryBuilder()
+        String query =new SQLQueryBuilder()
                             .table("Car")
-                            .filterToGroup("Car.ID", "?", 1)
-                            .filterToGroup("Car.NAME", "Ford", 1)
-                            .filterToGroup("Car.NAME", "Chevy", 1)
-                            .filterToGroup("Car.WHEELS", QueryCompareType.GREATERTHAN, 4, 2)
-                            .filterToGroup("Car.WHEELS", QueryCompareType.LESSTHAN_EQUAL, 2, 2)
                             .filter("Car.IS_COOL", true)
-                            .toString();
+                            .filter(CompareFilter.create("Car.ID", "?").or("Car.NAME", "'Ford'").or("Car.NAME", "'Chevy'"))
+                            .filter(CompareFilter.create("Car.WHEELS", CompareType.GREATERTHAN, 4).or("Car.WHEELS", CompareType.LESSTHAN_EQUAL, 2))
+                            .buildQuery();
 
 
   * Multiple Tables
@@ -133,7 +130,7 @@ Usage
                             .field("c.name", "cat_name")
 
                             .filter("p.ID", 5)
-                            .toString();
+                            .buildQuery();
 
   * Join
 
@@ -145,7 +142,7 @@ Usage
                             .join("Colors", "Color.ID", "Car.COLOR_ID")
                             .field("Name")
                             .orderBy("Color.Name")
-                            .toString();
+                            .buildQuery();
 
 
   * Multiple Joins
@@ -162,7 +159,7 @@ Usage
                             .field("Name")
                             .filter("Car.ID", 5)
                             .orderBy("Color.Name")
-                            .toString();
+                            .buildQuery();
 
   * Joins with AND
 
@@ -171,11 +168,11 @@ Usage
 
         String query = new SQLQueryBuilder()
                             .table("Car")
-                            .join("Colors", new SQLFilterItem("Color.ID", "Car.COLOR_ID"), new SQLFilterItem("Color.COOL", "1"))
+                            .join("Colors", CompareFilter.create("Color.ID", "Car.COLOR_ID"), CompareFilter.create("Color.COOL", "1"))
                             .join("Make", "Car.MAKE_ID", "Make.ID")
                             .field("Name")
                             .orderBy("Color.Name")
-                            .toString();
+                            .buildQuery();
 
   * Sub-Select
 
@@ -187,7 +184,7 @@ Usage
 
         SQLQueryBuilder sql = new SQLQueryBuilder();
         sql.table("Family");
-        sql.filter("HeadPerson", QueryCompareType.IN, subSql);
+        sql.filter("HeadPerson", CompareType.IN, subSql);
 
   * Union
 
@@ -235,7 +232,7 @@ Usage
         // QUERY 2
         SQLQueryBuilder sql2 = new SQLQueryBuilder();
         sql2.filter("Car.NAME", "Ford");
-        sql2.filter("Car.WHEELS", QueryCompareType.GREATERTHAN, 4);
+        sql2.filter("Car.WHEELS", CompareType.GREATERTHAN, 4);
         sql2.filter("Car.IS_COOL", true);
 
         sql1.apply(sql2);
@@ -244,7 +241,7 @@ Usage
 License
 =======
 
-    Copyright 2014 Jeff Campbell
+    Copyright 2015 Jeff Campbell
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
