@@ -354,6 +354,11 @@ public class SQLQueryBuilder implements Cloneable {
         return this;
     }
 
+    public SQLQueryBuilder distinct(boolean distinct) {
+        this.distinct = distinct;
+        return this;
+    }
+
     public String buildQuery() {
         return buildQuery(false);
     }
@@ -593,10 +598,6 @@ public class SQLQueryBuilder implements Cloneable {
 
     public boolean isDistinct() {
         return distinct;
-    }
-
-    public void distinct(boolean distinct) {
-        this.distinct = distinct;
     }
 
     public List<Field> getFields() {
