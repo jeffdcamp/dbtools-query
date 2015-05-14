@@ -349,7 +349,7 @@ public class SQLQueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder andCalause(String c) {
+    public SQLQueryBuilder andClause(String c) {
         andClauses.add(c);
         return this;
     }
