@@ -74,6 +74,16 @@ public class JPAQueryBuilderTest {
     }
 
     @Test
+    public void testDistinct() {
+        JPAQueryBuilder qb1 = new JPAQueryBuilder();
+        qb1.distinct(true);
+        qb1.object("Person");
+        qb1.field(P_LAST_NAME);
+        String var = JPAQueryBuilder.DEFAULT_OBJ_VAR;
+        assertEquals("SELECT DISTINCT " + var + "." + P_LAST_NAME + " FROM Person " + var, qb1.toString());
+    }
+
+    @Test
     public void testMultiObjQuery() {
         // using default var
         JPAQueryBuilder qb1 = new JPAQueryBuilder();
