@@ -101,6 +101,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     public JPAQueryBuilder apply(JPAQueryBuilder<T> queryBuilder) {
+        distinct = distinct == null ? queryBuilder.distinct : distinct;
         fields.addAll(queryBuilder.getFields());
         objects.addAll(queryBuilder.getObjects());
         joins.addAll(queryBuilder.getJoins());
