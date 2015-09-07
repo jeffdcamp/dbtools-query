@@ -34,7 +34,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     public static final String DEFAULT_QUERY_PARAMETER = "?";
 
     // NOTE: if any NEW variables are added BE SURE TO PUT IT INTO THE clone() method
-    private boolean distinct = false;
+    private Boolean distinct = false;
     private List<Field> fields;
     private List<String> objects;
     private List<String> varNames;
@@ -87,6 +87,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     public final void reset() {
+        distinct = false;
         fields = new ArrayList<Field>();
         objects = new ArrayList<String>();
         varNames = new ArrayList<String>();
@@ -100,6 +101,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     public JPAQueryBuilder apply(JPAQueryBuilder<T> queryBuilder) {
+        distinct = distinct == null ? queryBuilder.distinct : distinct;
         fields.addAll(queryBuilder.getFields());
         objects.addAll(queryBuilder.getObjects());
         joins.addAll(queryBuilder.getJoins());
@@ -529,6 +531,14 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
 
     public void setQueryParameter(String queryParameter) {
         this.queryParameter = queryParameter;
+    }
+
+    public void distinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
     }
 
     public boolean isDistinct() {

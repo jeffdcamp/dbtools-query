@@ -60,10 +60,10 @@ public class SQLQueryBuilderTest {
 
     @Test
     public void testDistinct() {
-        SQLQueryBuilder sql = new SQLQueryBuilder();
-        sql.distinct(true);
-        sql.table("Person");
-        sql.field("LastName");
+        SQLQueryBuilder sql = SQLQueryBuilder.build()
+        .distinct(true)
+        .table("Person")
+        .field("LastName");
         assertEquals("SELECT DISTINCT LastName FROM Person", sql.buildQuery());
     }
 

@@ -111,6 +111,11 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return this;
     }
 
+    public SQLQueryBuilder distinct(boolean distinct) {
+        this.distinct = distinct;
+        return this;
+    }
+
     /**
      * Adds a column to the query.
      */
