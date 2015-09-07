@@ -466,7 +466,7 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return distinct;
     }
 
-    public SQLQueryBuilder distinct(boolean distinct) {
+    public SQLQueryBuilder distinct(Boolean distinct) {
         this.distinct = distinct;
         return this;
     }

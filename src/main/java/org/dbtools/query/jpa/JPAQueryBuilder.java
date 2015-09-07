@@ -537,7 +537,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         return distinct;
     }
 
-    public JPAQueryBuilder<T> distinct(boolean distinct) {
+    public JPAQueryBuilder<T> distinct(Boolean distinct) {
         this.distinct = distinct;
         return this;
     }
