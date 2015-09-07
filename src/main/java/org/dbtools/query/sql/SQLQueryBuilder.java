@@ -24,9 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author jeff
- */
+@SuppressWarnings("unused")
 public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
 
     public static final String DEFAULT_QUERY_PARAMETER = "?";
@@ -399,20 +397,6 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return selectClause;
     }
 
-    public static String[] toSelectionArgs(Object... args) {
-        List<String> selectionArgs = new ArrayList<String>(args.length);
-        for (Object o : args) {
-            if (o instanceof List) {
-                for (Object p : (List) o) {
-                    selectionArgs.add(String.valueOf(p));
-                }
-            } else {
-                selectionArgs.add(String.valueOf(o));
-            }
-        }
-        return selectionArgs.toArray(new String[selectionArgs.size()]);
-    }
-
     public static String union(SQLQueryBuilder... sqlQueryBuilders) {
         return union(false, sqlQueryBuilders);
     }
@@ -477,8 +461,9 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return distinct;
     }
 
-    public void distinct(boolean distinct) {
+    public SQLQueryBuilder distinct(boolean distinct) {
         this.distinct = distinct;
+        return this;
     }
 
     public List<Field> getFields() {
