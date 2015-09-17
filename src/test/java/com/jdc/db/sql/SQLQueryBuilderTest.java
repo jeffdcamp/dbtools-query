@@ -7,6 +7,7 @@ import org.dbtools.query.sql.SQLQueryBuilder;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Jeff
@@ -391,6 +392,19 @@ public class SQLQueryBuilderTest {
         // clone
         assertEquals("SELECT LastName, FirstName, Age FROM Person", sql2.clone().buildQuery());
 
+    }
+
+    @Test
+    public void testApplyWithFilters() {
+        SQLQueryBuilder sql1 = new SQLQueryBuilder();
+        sql1.table("person");
+        sql1.field("name");
+        sql1.filter("name", "?");
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.apply(sql1);
+        sql2.filter("id", "?");
+        assertNotEquals(sql1.buildQuery(), sql2.buildQuery());
     }
 
 }

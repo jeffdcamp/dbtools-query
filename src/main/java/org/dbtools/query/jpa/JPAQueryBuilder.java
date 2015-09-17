@@ -105,11 +105,12 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         fields.addAll(queryBuilder.getFields());
         objects.addAll(queryBuilder.getObjects());
         joins.addAll(queryBuilder.getJoins());
-        if (filter == null) {
-            this.filter = queryBuilder.filter;
-        } else {
-            if (queryBuilder.filter != null) {
-                this.filter.and(queryBuilder.filter);
+        if (queryBuilder.filter != null) {
+            Filter filterClone = queryBuilder.filter.clone();
+            if (filter == null) {
+                this.filter = filterClone;
+            } else {
+                this.filter.and(filterClone);
             }
         }
         groupBys.addAll(queryBuilder.getGroupBys());

@@ -4,6 +4,7 @@ import org.dbtools.query.jpa.JPAQueryBuilder;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  *
@@ -115,4 +116,17 @@ public class JPAQueryBuilderTest {
         assertEquals("SELECT a FROM Person a WHERE a.lastName = \"Smith\"", query1);
     }
 
+    @Test
+    public void testApplyWithFilters() {
+        JPAQueryBuilder<Object> qb1 = new JPAQueryBuilder<Object>();
+        String p = qb1.object("Person");
+        qb1.fieldObject(p);
+
+        qb1.filter(p, "ID", "?");
+
+        JPAQueryBuilder<Object> qb2 = new JPAQueryBuilder<Object>();
+        qb2.apply(qb1);
+        qb2.filter(p, "name", "?");
+        assertNotEquals(qb1.buildQuery(), qb2.buildQuery());
+    }
 }
