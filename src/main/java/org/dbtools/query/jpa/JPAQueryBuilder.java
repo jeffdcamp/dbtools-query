@@ -51,7 +51,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     @Override
-    public Object clone() {
+    public JPAQueryBuilder<T> clone() {
         Class thisClass = this.getClass();
 
         JPAQueryBuilder clone;
@@ -101,19 +101,20 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     }
 
     public JPAQueryBuilder apply(JPAQueryBuilder<T> queryBuilder) {
-        distinct = distinct == null ? queryBuilder.distinct : distinct;
-        fields.addAll(queryBuilder.getFields());
-        objects.addAll(queryBuilder.getObjects());
-        joins.addAll(queryBuilder.getJoins());
-        if (filter == null) {
-            this.filter = queryBuilder.filter;
-        } else {
-            if (queryBuilder.filter != null) {
-                this.filter.and(queryBuilder.filter);
+        JPAQueryBuilder<T> clone = queryBuilder.clone();
+        distinct = distinct == null ? clone.distinct : distinct;
+        fields.addAll(clone.getFields());
+        objects.addAll(clone.getObjects());
+        joins.addAll(clone.getJoins());
+        if (clone.filter != null) {
+            if (filter == null) {
+                this.filter = clone.filter;
+            } else {
+                this.filter.and(clone.filter);
             }
         }
-        groupBys.addAll(queryBuilder.getGroupBys());
-        orderBys.addAll(queryBuilder.getOrderBys());
+        groupBys.addAll(clone.getGroupBys());
+        orderBys.addAll(clone.getOrderBys());
         return this;
     }
 

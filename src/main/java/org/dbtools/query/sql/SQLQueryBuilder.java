@@ -95,19 +95,20 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
     }
 
     public SQLQueryBuilder apply(SQLQueryBuilder sqlQueryBuilder) {
-        distinct = distinct == null ? sqlQueryBuilder.distinct : distinct;
-        fields.addAll(sqlQueryBuilder.getFields());
-        tables.addAll(sqlQueryBuilder.getTables());
-        joins.addAll(sqlQueryBuilder.getJoins());
-        if (filter == null) {
-            filter = sqlQueryBuilder.filter;
-        } else {
-            if (sqlQueryBuilder.filter != null) {
-                filter.and(sqlQueryBuilder.filter);
+        SQLQueryBuilder clone = sqlQueryBuilder.clone();
+        distinct = distinct == null ? clone.distinct : distinct;
+        fields.addAll(clone.getFields());
+        tables.addAll(clone.getTables());
+        joins.addAll(clone.getJoins());
+        if (clone.filter != null) {
+            if (filter == null) {
+                filter = clone.filter;
+            } else {
+                filter.and(clone.filter);
             }
         }
-        groupBys.addAll(sqlQueryBuilder.getGroupBys());
-        orderBys.addAll(sqlQueryBuilder.getOrderBys());
+        groupBys.addAll(clone.getGroupBys());
+        orderBys.addAll(clone.getOrderBys());
         return this;
     }
 
