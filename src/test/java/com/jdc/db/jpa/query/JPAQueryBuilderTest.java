@@ -1,6 +1,8 @@
 package com.jdc.db.jpa.query;
 
 import org.dbtools.query.jpa.JPAQueryBuilder;
+import org.dbtools.query.shared.CompareType;
+import org.dbtools.query.sql.SQLQueryBuilder;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -127,6 +129,45 @@ public class JPAQueryBuilderTest {
         JPAQueryBuilder<Object> qb2 = new JPAQueryBuilder<Object>();
         qb2.apply(qb1);
         qb2.filter(p, "name", "?");
+        assertNotEquals(qb1.buildQuery(), qb2.buildQuery());
+    }
+
+
+    @Test
+    public void testHaving() {
+        JPAQueryBuilder qb = new JPAQueryBuilder();
+        String c = qb.object("Car", "c");
+        qb.having("wheels", 4);
+        assertEquals("No Group By", "SELECT c FROM Car c", qb.buildQuery());
+        qb.groupBy(c, "make");
+        assertEquals("Basic", "SELECT c FROM Car c GROUP BY c.make HAVING c.wheels = 4", qb.buildQuery());
+        qb.having("color", CompareType.NOT_EQUAL, "\"red\"");
+        assertEquals("CompareType", "SELECT c FROM Car c GROUP BY c.make HAVING c.wheels = 4 AND c.color != \"red\"", qb.buildQuery());
+        qb.having("value", CompareType.NOT_NULL);
+        assertEquals("Null", "SELECT c FROM Car c GROUP BY c.make HAVING c.wheels = 4 AND c.color != \"red\" AND c.value NOT NULL", qb.buildQuery());
+        qb.having("c.working = 1");
+        assertEquals("Null", "SELECT c FROM Car c GROUP BY c.make HAVING c.wheels = 4 AND c.color != \"red\" AND c.value NOT NULL AND c.working = 1",
+                qb.buildQuery());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHavingException() throws IllegalArgumentException {
+        JPAQueryBuilder qb = new JPAQueryBuilder();
+        qb.having("Word", CompareType.NOT_EQUAL);
+    }
+
+    @Test
+    public void testApplyWithHaving() {
+        JPAQueryBuilder<Object> qb1 = new JPAQueryBuilder<Object>();
+        String p = qb1.object("Person");
+        qb1.fieldObject(p);
+        qb1.groupBy(p, "test");
+
+        qb1.having(p, "ID", "?");
+
+        JPAQueryBuilder<Object> qb2 = new JPAQueryBuilder<Object>();
+        qb2.apply(qb1);
+        qb2.having(p, "name", "?");
         assertNotEquals(qb1.buildQuery(), qb2.buildQuery());
     }
 }

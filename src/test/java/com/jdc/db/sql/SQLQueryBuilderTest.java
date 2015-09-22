@@ -275,7 +275,6 @@ public class SQLQueryBuilderTest {
         assertEquals(expectedResult, test4.buildQuery());
     }
 
-
     @Test
     public void testIsNullQuery() {
         SQLQueryBuilder sql = new SQLQueryBuilder();
@@ -404,6 +403,42 @@ public class SQLQueryBuilderTest {
         SQLQueryBuilder sql2 = new SQLQueryBuilder();
         sql2.apply(sql1);
         sql2.filter("id", "?");
+        assertNotEquals(sql1.buildQuery(), sql2.buildQuery());
+    }
+
+    @Test
+    public void testHaving() {
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.table("Car");
+        sql.having("wheels", 4);
+        assertEquals("No Group By", "SELECT * FROM Car", sql.buildQuery());
+        sql.groupBy("make");
+        assertEquals("Basic", "SELECT * FROM Car GROUP BY make HAVING wheels = 4", sql.buildQuery());
+        sql.having("color", CompareType.NOT_EQUAL, "\"red\"");
+        assertEquals("CompareType", "SELECT * FROM Car GROUP BY make HAVING wheels = 4 AND color != \"red\"", sql.buildQuery());
+        sql.having("value", CompareType.NOT_NULL);
+        assertEquals("Null", "SELECT * FROM Car GROUP BY make HAVING wheels = 4 AND color != \"red\" AND value NOT NULL", sql.buildQuery());
+        sql.having("working = 1");
+        assertEquals("Null", "SELECT * FROM Car GROUP BY make HAVING wheels = 4 AND color != \"red\" AND value NOT NULL AND working = 1", sql.buildQuery());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHavingException() throws IllegalArgumentException {
+        SQLQueryBuilder sql = new SQLQueryBuilder();
+        sql.having("Word", CompareType.NOT_EQUAL);
+    }
+
+    @Test
+    public void testApplyWithHaving() {
+        SQLQueryBuilder sql1 = new SQLQueryBuilder();
+        sql1.table("person");
+        sql1.field("name");
+        sql1.groupBy("test");
+        sql1.having("name", "?");
+
+        SQLQueryBuilder sql2 = new SQLQueryBuilder();
+        sql2.apply(sql1);
+        sql2.having("id", "?");
         assertNotEquals(sql1.buildQuery(), sql2.buildQuery());
     }
 

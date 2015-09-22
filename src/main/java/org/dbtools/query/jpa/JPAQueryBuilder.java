@@ -41,6 +41,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
     private List<Join> joins;
     private Filter filter;
     private List<String> groupBys;
+    private Filter having;
     private List<String> orderBys;
     private String selectClause;
     private String postSelectClause;
@@ -74,6 +75,10 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         }
 
         clone.groupBys = new ArrayList<String>(groupBys);
+        if (this.having != null) {
+            clone.having = this.having.clone();
+        }
+
         clone.orderBys = new ArrayList<String>(orderBys);
 
         // immutable.... just assign
@@ -106,6 +111,7 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         fields.addAll(clone.getFields());
         objects.addAll(clone.getObjects());
         joins.addAll(clone.getJoins());
+
         if (clone.filter != null) {
             if (filter == null) {
                 this.filter = clone.filter;
@@ -113,7 +119,16 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
                 this.filter.and(clone.filter);
             }
         }
+
         groupBys.addAll(clone.getGroupBys());
+        if (clone.having != null) {
+            if (having == null) {
+                having = clone.having;
+            } else {
+                having.and(clone.having);
+            }
+        }
+
         orderBys.addAll(clone.getOrderBys());
         return this;
     }
@@ -312,6 +327,45 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         return this;
     }
 
+    public JPAQueryBuilder<T> having(String varName, Object value) {
+        return having(getOnlyVarName(), varName, CompareType.EQUAL, value);
+    }
+
+    public JPAQueryBuilder<T> having(String objectVarName, String varName, Object value) {
+        return having(objectVarName, varName, CompareType.EQUAL, value);
+    }
+
+    public JPAQueryBuilder<T> having(String varName, CompareType compare, Object value) {
+        return having(getOnlyVarName(), varName, compare, value);
+    }
+
+    public JPAQueryBuilder<T> having(String field, CompareType compare) {
+        switch (compare) {
+            case IS_NULL:
+            case NOT_NULL:
+                return having(field, compare, null);
+            default:
+                throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
+        }
+    }
+
+    public JPAQueryBuilder<T> having(String filter) {
+        return having(RawFilter.create(filter));
+    }
+
+    public JPAQueryBuilder<T> having(String objectVarName, String varName, CompareType compare, Object value) {
+        return having(CompareFilter.create(objectVarName + "." + varName, compare, value));
+    }
+
+    public JPAQueryBuilder<T> having(Filter filter) {
+        if (this.having == null) {
+            this.having = filter;
+        } else {
+            this.having.and(filter);
+        }
+        return this;
+    }
+
     public JPAQueryBuilder<T> orderBy(String varName) {
         orderBys.add(DEFAULT_OBJ_VAR + "." + varName);
         return this;
@@ -389,6 +443,9 @@ public class JPAQueryBuilder<T> extends QueryBuilder implements Cloneable {
         if (groupBys.size() > 0 && !countOnly) {
             query.append(" GROUP BY ");
             addListItems(query, groupBys, groupBySectionCount);
+            if (having != null) {
+                query.append(" HAVING ").append(having.buildFilter(this));
+            }
         }
 
         int orderBySectionCount = 0;
