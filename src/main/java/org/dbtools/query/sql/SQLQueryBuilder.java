@@ -36,6 +36,7 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
     private List<Join> joins;
     private Filter filter;
     private List<String> groupBys;
+    private Filter having;
     private List<String> orderBys;
     private String selectClause;
     private String postSelectClause;
@@ -72,6 +73,10 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         }
 
         clone.groupBys = new ArrayList<String>(groupBys);
+        if (this.having != null) {
+            clone.having = this.having.clone();
+        }
+
         clone.orderBys = new ArrayList<String>(orderBys);
 
         // immutable.... just assign
@@ -100,6 +105,7 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         fields.addAll(clone.getFields());
         tables.addAll(clone.getTables());
         joins.addAll(clone.getJoins());
+
         if (clone.filter != null) {
             if (filter == null) {
                 filter = clone.filter;
@@ -107,7 +113,16 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
                 filter.and(clone.filter);
             }
         }
+
         groupBys.addAll(clone.getGroupBys());
+        if (clone.having != null) {
+            if (having == null) {
+                having = clone.having;
+            } else {
+                having.and(clone.having);
+            }
+        }
+
         orderBys.addAll(clone.getOrderBys());
         return this;
     }
@@ -214,25 +229,21 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
     }
 
     public SQLQueryBuilder filter(String field, Object value) {
-        filter(CompareFilter.create(field, value));
-        return this;
+        return filter(CompareFilter.create(field, value));
     }
 
     public SQLQueryBuilder filter(String field, CompareType compare, Object value) {
-        filter(CompareFilter.create(field, compare, value));
-        return this;
+        return filter(CompareFilter.create(field, compare, value));
     }
 
     public SQLQueryBuilder filter(String field, CompareType compare) {
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
-                filter(CompareFilter.create(field, compare, null));
-                break;
+                return filter(CompareFilter.create(field, compare, null));
             default:
                 throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
         }
-        return this;
     }
 
     public SQLQueryBuilder filter(String filter) {
@@ -251,6 +262,37 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
 
     public SQLQueryBuilder groupBy(String item) {
         groupBys.add(item);
+        return this;
+    }
+
+    public SQLQueryBuilder having(String field, Object value) {
+        return having(CompareFilter.create(field, value));
+    }
+
+    public SQLQueryBuilder having(String field, CompareType compare, Object value) {
+        return having(CompareFilter.create(field, compare, value));
+    }
+
+    public SQLQueryBuilder having(String field, CompareType compare) {
+        switch (compare) {
+            case IS_NULL:
+            case NOT_NULL:
+                return having(CompareFilter.create(field, compare, null));
+            default:
+                throw new IllegalArgumentException("Illegal 1 argument compare " + compare.toString());
+        }
+    }
+
+    public SQLQueryBuilder having(String filter) {
+        return having(RawFilter.create(filter));
+    }
+
+    public SQLQueryBuilder having(Filter having) {
+        if (this.having == null) {
+            this.having = having;
+        } else {
+            this.having.and(having);
+        }
         return this;
     }
 
@@ -313,10 +355,13 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         }
 
         int groupBySectionCount = 0;
-        // add groupbys
+        // add groupbys and having
         if (groupBys.size() > 0 && !countOnly) {
             query.append(" GROUP BY ");
             addListItems(query, groupBys, groupBySectionCount);
+            if (having != null) {
+                query.append(" HAVING ").append(having.buildFilter(this));
+            }
         }
 
         int orderBySectionCount = 0;
@@ -324,6 +369,7 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         if (orderBys.size() > 0 && !countOnly) {
             query.append(" ORDER BY ");
             addListItems(query, orderBys, orderBySectionCount);
+
         }
 
         postSelectClause = query.toString();
@@ -490,6 +536,10 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
 
     public List<String> getGroupBys() {
         return groupBys;
+    }
+
+    public Filter getHaving() {
+        return having;
     }
 
     public List<String> getOrderBys() {
