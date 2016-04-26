@@ -3,12 +3,17 @@ package org.dbtools.query.shared.filter;
 import org.dbtools.query.shared.QueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class InParameterizedFilter extends InFilter {
 
     private int numParams;
 
-    public static InParameterizedFilter create(String field, int numParams) {
+    public static InParameterizedFilter create(@Nullable String field, int numParams) {
+        if (field == null) {
+            return null;
+        }
+
         InParameterizedFilter filterFormatter = new InParameterizedFilter();
         filterFormatter.filter = InParameterizedFilter.newInstance(field, true, numParams);
         return filterFormatter;

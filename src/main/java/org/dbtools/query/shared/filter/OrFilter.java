@@ -3,10 +3,15 @@ package org.dbtools.query.shared.filter;
 import org.dbtools.query.shared.QueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class OrFilter extends ConjunctionFilter {
 
-    public static OrFilter create(Filter... filters) {
+    public static OrFilter create(@Nullable Filter... filters) {
+        if (filters == null) {
+            return null;
+        }
+
         OrFilter orFilter = new OrFilter();
         orFilter.filter = OrFilter.newInstance(filters);
         return orFilter;

@@ -3,11 +3,16 @@ package org.dbtools.query.shared.filter;
 import org.dbtools.query.shared.QueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class RawFilter extends Filter {
     private String filterString;
 
-    public static RawFilter create(String filterString) {
+    public static RawFilter create(@Nullable String filterString) {
+        if (filterString == null) {
+            return null;
+        }
+
         RawFilter rawFilterFormatter = new RawFilter();
         rawFilterFormatter.filter = newInstance(filterString);
         return rawFilterFormatter;

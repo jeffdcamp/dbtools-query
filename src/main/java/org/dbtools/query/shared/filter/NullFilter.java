@@ -3,12 +3,17 @@ package org.dbtools.query.shared.filter;
 import org.dbtools.query.shared.QueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class NullFilter extends CompareFilter {
 
     private boolean isNull;
 
-    public static NullFilter create(String field) {
+    public static NullFilter create(@Nullable String field) {
+        if (field == null) {
+            return null;
+        }
+
         NullFilter filterFormatter = new NullFilter();
         filterFormatter.filter = NullFilter.newInstance(field, true);
         return filterFormatter;

@@ -19,6 +19,7 @@ import org.dbtools.query.shared.filter.CompareFilter;
 import org.dbtools.query.shared.filter.Filter;
 import org.dbtools.query.shared.filter.RawFilter;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -135,7 +136,11 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
     /**
      * Adds a column to the query.
      */
-    public SQLQueryBuilder field(String fieldName) {
+    public SQLQueryBuilder field(@Nullable String fieldName) {
+        if (fieldName == null) {
+            return this;
+        }
+
         fields.add(new Field(fieldName));
         return this;
     }
@@ -143,7 +148,11 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
     /**
      * Adds a column to the query.
      */
-    public SQLQueryBuilder field(String fieldName, String alias) {
+    public SQLQueryBuilder field(@Nullable String fieldName, @Nullable String alias) {
+        if (fieldName == null) {
+            return this;
+        }
+
         fields.add(new Field(fieldName, alias));
         return this;
     }
@@ -153,19 +162,31 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
      *
      * @return columnID (or the order in which it was added... 0 based)
      */
-    public SQLQueryBuilder field(String tablename, String fieldName, String alias) {
+    public SQLQueryBuilder field(@Nullable String tablename, @Nullable String fieldName, @Nullable String alias) {
+        if (fieldName == null) {
+            return this;
+        }
+
         fields.add(new Field(tablename + "." + fieldName, alias));
         return this;
     }
 
-    public SQLQueryBuilder fields(String... fieldNames) {
+    public SQLQueryBuilder fields(@Nullable String... fieldNames) {
+        if (fieldNames == null) {
+            return this;
+        }
+
         for (String fieldName : fieldNames) {
             field(fieldName);
         }
         return this;
     }
 
-    public SQLQueryBuilder fields(String[]... fieldNamesWithAlias) {
+    public SQLQueryBuilder fields(@Nullable String[]... fieldNamesWithAlias) {
+        if (fieldNamesWithAlias == null) {
+            return this;
+        }
+
         for (String[] fieldNameWithAlias : fieldNamesWithAlias) {
             switch (fieldNameWithAlias.length) {
                 case 1:
@@ -181,22 +202,38 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder table(String tableName) {
+    public SQLQueryBuilder table(@Nullable String tableName) {
+        if (tableName == null) {
+            return this;
+        }
+
         tables.add(tableName);
         return this;
     }
 
-    public SQLQueryBuilder table(SQLQueryBuilder sql) {
+    public SQLQueryBuilder table(@Nullable SQLQueryBuilder sql) {
+        if (sql == null) {
+            return this;
+        }
+
         tables.add("(" + sql.toString() + ")");
         return this;
     }
 
-    public SQLQueryBuilder table(String tableName, String alias) {
+    public SQLQueryBuilder table(@Nullable String tableName, @Nullable String alias) {
+        if (tableName == null) {
+            return this;
+        }
+
         tables.add(tableName + " " + alias);
         return this;
     }
 
-    public SQLQueryBuilder join(String field1, String field2) {
+    public SQLQueryBuilder join(@Nullable String field1, @Nullable String field2) {
+        if (field1 == null || field2 == null) {
+            return this;
+        }
+
         if (filter == null) {
             filter = CompareFilter.create(field1, field2);
         } else {
@@ -205,38 +242,62 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder join(String tableName, String field1, String field2) {
+    public SQLQueryBuilder join(@Nullable String tableName, @Nullable String field1, @Nullable String field2) {
+        if (tableName == null || field1 == null || field2 == null) {
+            return this;
+        }
+
         join(JoinType.JOIN, tableName, field1, field2);
         return this;
     }
 
-    public SQLQueryBuilder join(JoinType joinType, String tableName, String field1, String field2) {
+    public SQLQueryBuilder join(JoinType joinType, @Nullable String tableName, @Nullable String field1, @Nullable String field2) {
+        if (tableName == null || field1 == null || field2 == null) {
+            return this;
+        }
+
         joins.add(new Join(joinType, tableName, CompareFilter.create(field1, field2)));
         return this;
     }
 
-    public SQLQueryBuilder join(String tableName, Filter... filters) {
+    public SQLQueryBuilder join(@Nullable String tableName, @Nullable Filter... filters) {
+        if (tableName == null || filters == null) {
+            return this;
+        }
+
         return join(JoinType.JOIN, tableName, filters);
     }
 
-    public SQLQueryBuilder join(JoinType joinType, String tableName, Filter... filters) {
+    public SQLQueryBuilder join(JoinType joinType, @Nullable String tableName, @Nullable Filter... filters) {
+        if (tableName == null || filters == null) {
+            return this;
+        }
+
         return join(new Join(joinType, tableName, AndFilter.create(filters)));
     }
 
-    public SQLQueryBuilder join(Join... joins) {
+    public SQLQueryBuilder join(@Nullable Join... joins) {
+        if (joins == null) {
+            return this;
+        }
+
         this.joins.addAll(Arrays.asList(joins));
         return this;
     }
 
-    public SQLQueryBuilder filter(String field, Object value) {
+    public SQLQueryBuilder filter(@Nullable String field, @Nullable Object value) {
         return filter(CompareFilter.create(field, value));
     }
 
-    public SQLQueryBuilder filter(String field, CompareType compare, Object value) {
+    public SQLQueryBuilder filter(@Nullable String field, CompareType compare, @Nullable Object value) {
         return filter(CompareFilter.create(field, compare, value));
     }
 
-    public SQLQueryBuilder filter(String field, CompareType compare) {
+    public SQLQueryBuilder filter(@Nullable String field, CompareType compare) {
+        if (field == null) {
+            return this;
+        }
+
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
@@ -246,12 +307,20 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         }
     }
 
-    public SQLQueryBuilder filter(String filter) {
+    public SQLQueryBuilder filter(@Nullable String filter) {
+        if (filter == null) {
+            return this;
+        }
+
         filter(RawFilter.create(filter));
         return this;
     }
 
-    public SQLQueryBuilder filter(Filter filter) {
+    public SQLQueryBuilder filter(@Nullable Filter filter) {
+        if (filter == null) {
+            return this;
+        }
+
         if (this.filter == null) {
             this.filter = filter;
         } else {
@@ -260,20 +329,36 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder groupBy(String item) {
+    public SQLQueryBuilder groupBy(@Nullable String item) {
+        if (item == null) {
+            return this;
+        }
+
         groupBys.add(item);
         return this;
     }
 
-    public SQLQueryBuilder having(String field, Object value) {
+    public SQLQueryBuilder having(@Nullable String field, @Nullable Object value) {
+        if (field == null || value == null) {
+            return this;
+        }
+
         return having(CompareFilter.create(field, value));
     }
 
     public SQLQueryBuilder having(String field, CompareType compare, Object value) {
+        if (field == null || value == null) {
+            return this;
+        }
+
         return having(CompareFilter.create(field, compare, value));
     }
 
-    public SQLQueryBuilder having(String field, CompareType compare) {
+    public SQLQueryBuilder having(@Nullable String field, CompareType compare) {
+        if (field == null) {
+            return this;
+        }
+
         switch (compare) {
             case IS_NULL:
             case NOT_NULL:
@@ -283,11 +368,19 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         }
     }
 
-    public SQLQueryBuilder having(String filter) {
+    public SQLQueryBuilder having(@Nullable String filter) {
+        if (filter == null) {
+            return this;
+        }
+
         return having(RawFilter.create(filter));
     }
 
-    public SQLQueryBuilder having(Filter having) {
+    public SQLQueryBuilder having(@Nullable Filter having) {
+        if (having == null) {
+            return this;
+        }
+
         if (this.having == null) {
             this.having = having;
         } else {
@@ -296,17 +389,29 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         return this;
     }
 
-    public SQLQueryBuilder orderBy(String item) {
+    public SQLQueryBuilder orderBy(@Nullable String item) {
+        if (item == null) {
+            return this;
+        }
+
         orderBys.add(item);
         return this;
     }
 
-    public SQLQueryBuilder orderBy(String... items) {
+    public SQLQueryBuilder orderBy(@Nullable String... items) {
+        if (items == null) {
+            return this;
+        }
+
         Collections.addAll(orderBys, items);
         return this;
     }
 
-    public SQLQueryBuilder orderBy(String item, boolean ascending) {
+    public SQLQueryBuilder orderBy(@Nullable String item, boolean ascending) {
+        if (item == null) {
+            return this;
+        }
+
         String direction = ascending ? "ASC" : "DESC";
         orderBys.add(item + " " + direction);
         return this;
@@ -351,7 +456,10 @@ public class SQLQueryBuilder extends QueryBuilder implements Cloneable {
         }
 
         if (filter != null) {
-            query.append(" WHERE ").append(filter.buildFilter(this));
+            String whereClause = filter.buildFilter(this);
+            if (whereClause != null && !whereClause.isEmpty()) {
+                query.append(" WHERE ").append(whereClause);
+            }
         }
 
         int groupBySectionCount = 0;

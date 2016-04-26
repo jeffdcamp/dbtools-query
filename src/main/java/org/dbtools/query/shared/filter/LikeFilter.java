@@ -4,12 +4,17 @@ package org.dbtools.query.shared.filter;
 import org.dbtools.query.shared.QueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class LikeFilter extends CompareFilter {
 
     protected boolean ignoreCase;
 
-    public static LikeFilter create(String field, Object value) {
+    public static LikeFilter create(@Nullable String field, @Nullable Object value) {
+        if (field == null) {
+            return null;
+        }
+
         LikeFilter filterFormatter = new LikeFilter();
         filterFormatter.filter = LikeFilter.newInstance(field, value);
         return filterFormatter;

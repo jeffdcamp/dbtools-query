@@ -12,6 +12,10 @@ public class CompareFilter extends Filter {
     protected Object value;
 
     public static CompareFilter create(String field, Object value) {
+        if (field == null) {
+            return null;
+        }
+
         CompareFilter filter = new CompareFilter();
         filter.filter = CompareFilter.newInstance(field, CompareType.EQUAL, value);
         return filter;
