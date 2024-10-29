@@ -1,21 +1,13 @@
-# Temp files
-*~
-
-# NetBeans
-nb-configuration.xml
-# nbactions.xml
-
-# Eclipse
-.settings
-.classpath
-.project
-.mymetadata
-
-# IDEA
-.idea/
-*.ipr
+.build
 *.iml
-*.iws
 
-# Maven
-target/
+.gradle
+.idea
+.DS_Store
+.kotlin
+build
+captures
+.externalNativeBuild
+.cxx
+local.properties
+xcuserdata

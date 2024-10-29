@@ -1,6 +1,0 @@
-
-
-Name: com/jdc/db/jpa/components/JPAEntityTable.class
-Java-Bean: True
-
-
