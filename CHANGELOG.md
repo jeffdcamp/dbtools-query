@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2024-10-29
+
+### Changed
+
+- Updated publishing plugin for Maven Central deployment
+- Updated versions
+
 ## [4.0.0] - 2024-10-29
 
 ### Added

@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kover)
     alias(libs.plugins.download)
-    id("maven-publish")
+    alias(libs.plugins.vanniktechPublishing)
 //    signing
 }
 
@@ -54,15 +54,16 @@ kotlin {
         it.binaries.framework {
             baseName = "dbtools-query"
             binaryOption("bundleId", "org.dbtools.query")
-            binaryOption("bundleVersion", property("version") as? String ?: "0.0.0")
+                val version: String by project
+                binaryOption("bundleVersion", version)
         }
     }
 
     // ==== currently unsupported ====
-//    macosArm64()
-//    iosX64()
-//    iosArm64()
-//    iosSimulatorArm64()
+    macosArm64()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 //    watchosArm32()
 //    watchosArm64()
 //    watchosSimulatorArm64()
@@ -124,11 +125,14 @@ kover {
     }
 }
 
-// ./gradlew clean build assembleRelease publishToMavenLocal
-// ./gradlew clean build assembleRelease publishMavenPublicationToMavenLocal publishAndroidReleasePublicationToMavenLocal
-// ./gradlew clean build assembleRelease publishMavenPublicationToMavenCentralRepository publishReleasePublicationToMavenCentralRepository
-// ./gradlew clean build assembleRelease publishAllPublicationsToMavenCentralRepository
-fun MavenPublication.mavenCentralPom() {
+// ./gradlew clean build check publishToMavenLocal
+// ./gradlew clean build check publishToMavenCentral
+mavenPublishing {
+    val version: String by project
+    coordinates("org.dbtools", "dbtools-query", version)
+    publishToMavenCentral()
+    signAllPublications()
+
     pom {
         name.set("dbtools-query")
         description.set("dbtools-query")
@@ -149,63 +153,6 @@ fun MavenPublication.mavenCentralPom() {
             connection.set("scm:git:git://github.com/jeffdcamp/dbtools-query.git")
             developerConnection.set("scm:git:git@github.com:jeffdcamp/dbtools-query.git")
             url.set("https://github.com/jeffdcamp/dbtools-query")
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            // artifactId defined by module name
-            // groupId / version defined in gradle.properties
-            from(components["kotlin"])
-
-            if (plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-                // already has publications, just need to add javadoc task
-                val javadocJar by tasks.creating(Jar::class) {
-                    from("javadoc")
-                    archiveClassifier.set("javadoc")
-                }
-                publications.all {
-                    if (this is MavenPublication) {
-                        artifact(javadocJar)
-                        mavenCentralPom()
-                    }
-                }
-                // create task to publish all apple (macos, ios, tvos, watchos) artifacts
-                val publishApple by tasks.registering {
-                    publications.all {
-                        if (name.contains(Regex("macos|ios|tvos|watchos"))) {
-                            val publicationNameForTask = name.replaceFirstChar(Char::uppercase)
-                            dependsOn("publish${publicationNameForTask}PublicationToMavenCentralRepository")
-                        }
-                    }
-                }
-            } else {
-                // Need to create source, javadoc & publication
-                val java = extensions.getByType<JavaPluginExtension>()
-                java.withSourcesJar()
-                java.withJavadocJar()
-                publications {
-                    create<MavenPublication>("lib") {
-                        from(components["java"])
-                        mavenCentralPom()
-                    }
-                }
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "MavenCentral"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2")
-            credentials {
-                val sonatypeNexusUsername: String? by project
-                val sonatypeNexusPassword: String? by project
-                username = sonatypeNexusUsername ?: ""
-                password = sonatypeNexusPassword ?: ""
-            }
         }
     }
 }
